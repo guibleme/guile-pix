@@ -1,0 +1,667 @@
+/**
+ * Dungeon Tiles batch 2 — 20 dungeon wall tiles (seamless/tileable).
+ * Row 0 matches row 15, col 0 matches col 15 for seamless tiling.
+ */
+import type { BatchDefinition } from '../templateGenerator.js';
+
+const batch: BatchDefinition = {
+  category: 'dungeon_tiles',
+  exportNames: { templates: 'DUNGEON_TILES_BATCH2_TEMPLATES', schemes: 'DUNGEON_TILES_BATCH2_COLOR_SCHEMES' },
+  templates: [
+
+    // 1. stone_wall_tile_16
+    {
+      id: 'stone_wall_tile_16',
+      description: 'Tileable stone wall with large blocks and mortar.',
+      grid: [
+        'SBBBBBBSBBBBBBBS',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'SSSSSBBBSSSSSBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBSSSSSBBBSSSSS',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'SSSSSBBBSSSSSBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBSSSSSBBBSSSSS',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        S: { name: 'mortar', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        head: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+      },
+    },
+
+    // 2. brick_wall_tile_16
+    {
+      id: 'brick_wall_tile_16',
+      description: 'Tileable red brick wall with running bond pattern.',
+      grid: [
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'SSSSSSSSSSSSSSSS',
+        'SBBBSBBBSBBBSBBB',
+        'SBBBSBBBSBBBSBBB',
+        'SBBBSBBBSBBBSBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'SSSSSSSSSSSSSSSS',
+        'SBBBSBBBSBBBSBBB',
+        'SBBBSBBBSBBBSBBB',
+        'SBBBSBBBSBBBSBBB',
+        'SSSSSSSSSSSSSSSS',
+      ],
+      chars: {
+        B: { name: 'brick', role: 'body' },
+        S: { name: 'mortar', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#854c30', highlight: '#d27d2c' },
+        head: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+      },
+    },
+
+    // 3. rough_stone_wall_16
+    {
+      id: 'rough_stone_wall_16',
+      description: 'Tileable rough uncut stone wall with irregular surface.',
+      grid: [
+        'BBBBHBBBBHBBBBBB',
+        'BBBHBBBBBBBHBBBB',
+        'BBBBBBHBBBBBBBBB',
+        'BHBBBBBBBBHBBBBB',
+        'BBBBBHBBBBBBHBBB',
+        'BBBBBBBBHBBBBBBB',
+        'BBBHBBBBBBBBBBHB',
+        'BBBBBBBBHBBHBBBB',
+        'BHBBBBBBBBBBBBBB',
+        'BBBBBHBBBBBHBBBB',
+        'BBHBBBBBBBBBBBB.',
+        'BBBBBBBHBBBBHBBB',
+        'BBBBHBBBBBBBBBB.',
+        'BHBBBBBBHBBBBBBB',
+        'BBBBBHBBBBBBHBBB',
+        'BBBBBBBBHBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        H: { name: 'roughness', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        head: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+      },
+    },
+
+    // 4. mossy_wall_tile_16
+    {
+      id: 'mossy_wall_tile_16',
+      description: 'Tileable stone wall with moss growing in cracks.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'SSSSSBBBBSSSSSBB',
+        'BBMMBBBBBBBMMBBB',
+        'BMMMMBBBBBBMMMBB',
+        'BBMMBBBBBBBMMBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBSSSSSBBBBSSS',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBMMBBBBBBB.',
+        'BBBBBMMMMBBBBBB.',
+        'BBBBBBMMBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'SSSSSBBBBSSSSSBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        S: { name: 'mortar', role: 'head' },
+        M: { name: 'moss', role: 'accessory' },
+      },
+      colors: {
+        body:      { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        head:      { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+        accessory: { shadow: '#346524', base: '#346524', highlight: '#6dc2ca' },
+      },
+    },
+
+    // 5. damaged_wall_tile_16
+    {
+      id: 'damaged_wall_tile_16',
+      description: 'Tileable damaged stone wall with crumbling patches.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBCCBBBBBBBBBB.',
+        'BBCCCBBBBBBBBBB.',
+        'BBBCCBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBCCBBBB',
+        'BBBBBBBBBCCCBBBB',
+        'BBBBBBBBBBCCBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBCCCBBBBBBB.',
+        'BBBBCCCBBBBBBBB.',
+        'BBBBBCCBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        C: { name: 'damage', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        eye:  { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+      },
+    },
+
+    // 6. crypt_wall_tile_16
+    {
+      id: 'crypt_wall_tile_16',
+      description: 'Tileable dark crypt wall with skull recesses.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'SSSSSSSBBSSSSSSB',
+        'BBBEEBBBBBBEEBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BSSSSSSBBSSSSSSB',
+        'BBBEEBBBBBBEEBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        S: { name: 'shelf', role: 'head' },
+        E: { name: 'skull_eyes', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+        head: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        eye:  { shadow: '#140c1c', base: '#140c1c', highlight: '#442434' },
+      },
+    },
+
+    // 7. sewer_wall_tile_16
+    {
+      id: 'sewer_wall_tile_16',
+      description: 'Tileable sewer wall with moisture dripping down.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'SSSSSSSSSSSSSSS.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBWBBBBBBBBWBBB',
+        'BBBWBBBBBBBBWBB.',
+        'BBBWBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'SSSSSSSSSSSSSSS.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBWBBBBBBBB.',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        S: { name: 'ledge', role: 'head' },
+        W: { name: 'water', role: 'accessory' },
+      },
+      colors: {
+        body:      { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        head:      { shadow: '#442434', base: '#757161', highlight: '#8595a1' },
+        accessory: { shadow: '#30346d', base: '#597dce', highlight: '#6dc2ca' },
+      },
+    },
+
+    // 8. ice_wall_tile_16
+    {
+      id: 'ice_wall_tile_16',
+      description: 'Tileable frozen ice wall with crystalline fractures.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBCBBBBBBBBBB',
+        'BBBBCCBBBBBBBBBB',
+        'BBBCBBBBBBBCBBBB',
+        'BBBBBBBBBBCCBBBB',
+        'BBBBBBBBBCBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBCBBBBBBBBBBBBB',
+        'BCCBBBBBBBBBBBB.',
+        'BCBBBBBBBBBBBBBB',
+        'BBBBBBBBBBCBBBBB',
+        'BBBBBBBBBCCBBBBB',
+        'BBBBBBBBCBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBCBB',
+        'BBBBBBBBBBBBCCBB',
+      ],
+      chars: {
+        B: { name: 'ice', role: 'body' },
+        C: { name: 'fracture', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#597dce', base: '#6dc2ca', highlight: '#deeed6' },
+        head: { shadow: '#30346d', base: '#597dce', highlight: '#8595a1' },
+      },
+    },
+
+    // 9. sandstone_wall_tile_16
+    {
+      id: 'sandstone_wall_tile_16',
+      description: 'Tileable sandstone wall with desert-carved blocks.',
+      grid: [
+        'SBBBBBBBBSBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'SSSSSBBBBBSSSSSB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBSSSSSBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'SSSSSBBBBBSSSSSB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBSSSSSBBBBB.',
+      ],
+      chars: {
+        B: { name: 'sandstone', role: 'body' },
+        S: { name: 'mortar', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#854c30', base: '#d27d2c', highlight: '#d2aa99' },
+        head: { shadow: '#442434', base: '#854c30', highlight: '#d27d2c' },
+      },
+    },
+
+    // 10. volcanic_wall_tile_16
+    {
+      id: 'volcanic_wall_tile_16',
+      description: 'Tileable volcanic rock wall with glowing magma veins.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBGBBBBBB',
+        'BBBBBBBBGGBBBBBB',
+        'BBBBBBBGBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BGBBBBBBBBBBBBBB',
+        'BBGBBBBBBBBBBBBB',
+        'BBBGBBBBBBBBBBBB',
+        'BBBBBBBBBBBBGBB.',
+        'BBBBBBBBBBBGGBBB',
+        'BBBBBBBBBBGBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBGBBBBBBBBBB.',
+        'BBBGGBBBBBBBBBB.',
+        'BBBBGBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'volcanic', role: 'body' },
+        G: { name: 'magma', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+        eye:  { shadow: '#d04648', base: '#d27d2c', highlight: '#dad45e' },
+      },
+    },
+
+    // 11. marble_wall_tile_16
+    {
+      id: 'marble_wall_tile_16',
+      description: 'Tileable polished marble wall with elegant veining.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBVBBBBBBBBBB',
+        'BBBBVVBBBBBBBBBB',
+        'BBBVBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBVBBBBB',
+        'BBBBBBBBBVVBBBBB',
+        'BBBBBBBBVBBBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BVBBBBBBBBBBBBBB',
+        'BVVBBBBBBBBBBBBB',
+        'BBVBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBVBBBB',
+        'BBBBBBBBBBVVBBBB',
+        'BBBBBBBBBVBBBBBB',
+      ],
+      chars: {
+        B: { name: 'marble', role: 'body' },
+        V: { name: 'vein', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#8595a1', base: '#d2aa99', highlight: '#deeed6' },
+        head: { shadow: '#757161', base: '#8595a1', highlight: '#d2aa99' },
+      },
+    },
+
+    // 12. wood_panel_wall_16
+    {
+      id: 'wood_panel_wall_16',
+      description: 'Tileable wood panel wall with vertical planks.',
+      grid: [
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BHHSBBBSHBHSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBHBSBBBSBHBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BHBSBBBSBBBSBBHS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+      ],
+      chars: {
+        B: { name: 'plank', role: 'body' },
+        S: { name: 'gap', role: 'head' },
+        H: { name: 'knot', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#854c30', highlight: '#d27d2c' },
+        head: { shadow: '#140c1c', base: '#442434', highlight: '#442434' },
+        eye:  { shadow: '#442434', base: '#854c30', highlight: '#854c30' },
+      },
+    },
+
+    // 13. dungeon_tile_wall_16
+    {
+      id: 'dungeon_tile_wall_16',
+      description: 'Tileable square-cut dungeon wall with uniform blocks.',
+      grid: [
+        'BBBBBBBSBBBBBBBS',
+        'BBBBBBBSBBBBBBBS',
+        'BBBBBBBSBBBBBBBS',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBSBBBBBBSBBBB',
+        'BBBBSBBBBBBSBBBB',
+        'BBBBSBBBBBBSBBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBBBBSBBBBBBBS',
+        'BBBBBBBSBBBBBBBS',
+        'BBBBBBBSBBBBBBBS',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBSBBBBBBSBBBB',
+        'BBBBSBBBBBBSBBBB',
+        'BBBBSBBBBBBSBBBB',
+        'SSSSSSSSSSSSSSSS',
+      ],
+      chars: {
+        B: { name: 'block', role: 'body' },
+        S: { name: 'mortar', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#8595a1' },
+        head: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+      },
+    },
+
+    // 14. cobble_wall_tile_16
+    {
+      id: 'cobble_wall_tile_16',
+      description: 'Tileable cobblestone wall with rounded irregular stones.',
+      grid: [
+        'BBBBSBBSBBBSBBBB',
+        'BBBBSBBSBBBSBBBB',
+        'SBBBBSSSBBBBSSBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBB.',
+        'BSBBBBSBBSBBBBSB',
+        'BSBBBBSBBSBBBBSB',
+        'BBSBBBBBSBBBBSBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBB.',
+        'SBBBBSBSBBBSBBBB',
+        'BBBBBSBSBBBSBBBB',
+        'BBBSBBBBSBBBBSBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBSBBSBBBSBBBB',
+      ],
+      chars: {
+        B: { name: 'cobble', role: 'body' },
+        S: { name: 'mortar', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#757161', highlight: '#8595a1' },
+        head: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+      },
+    },
+
+    // 15. prison_wall_tile_16
+    {
+      id: 'prison_wall_tile_16',
+      description: 'Tileable prison wall with scratched tally marks.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBTTBBBBBBBBBBB',
+        'BBBTTBBBBBTTBBBB',
+        'BBBTTBBBBBTTBBBB',
+        'BBBTTBBBBBTTBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBTTTBBBB',
+        'BBTTTBBBBTTTBBBB',
+        'BBTTTBBBBTTTBBBB',
+        'BBTTTBBBBTTTBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        T: { name: 'tally', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+        head: { shadow: '#4e4a4e', base: '#757161', highlight: '#8595a1' },
+      },
+    },
+
+    // 16. magic_wall_tile_16
+    {
+      id: 'magic_wall_tile_16',
+      description: 'Tileable enchanted wall with glowing rune lines.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBRRBBBBBB.',
+        'BBBBBBRBBBBBBBB.',
+        'BBBBBBRBBBBBBBB.',
+        'BBBBBBBRRBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBRRBBBBBBBBBB.',
+        'BBRBBBBBBBBRRBB.',
+        'BBRBBBBBBBRBBBB.',
+        'BBBRRBBBBBRBBBB.',
+        'BBBBBBBBBBBBRRBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        R: { name: 'rune', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        eye:  { shadow: '#30346d', base: '#597dce', highlight: '#6dc2ca' },
+      },
+    },
+
+    // 17. bone_wall_tile_16
+    {
+      id: 'bone_wall_tile_16',
+      description: 'Tileable bone-embedded wall (catacomb style).',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBWWBBBBBBWWBBB',
+        'BBWWWWBBBWWWWBB.',
+        'BBBWWBBBBBBWWBBB',
+        'BBBBBBBBBBBBBBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBWWBBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBBWWBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBBBBBBBBBBBBB',
+        'BBBWWBBBBBBWWBBB',
+        'BBWWWWBBBWWWWBB.',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        W: { name: 'bone', role: 'head' },
+        S: { name: 'shelf', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+        head: { shadow: '#757161', base: '#d2aa99', highlight: '#deeed6' },
+        eye:  { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+      },
+    },
+
+    // 18. metal_plate_wall_16
+    {
+      id: 'metal_plate_wall_16',
+      description: 'Tileable riveted metal plate wall.',
+      grid: [
+        'RBBBBBBBBBBBBBBR',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'RBBBBBBBBBBBBBBR',
+        'RBBBBBBBBBBBBBBR',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'RBBBBBBBBBBBBBBR',
+      ],
+      chars: {
+        B: { name: 'metal', role: 'body' },
+        R: { name: 'rivet', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#4e4a4e', base: '#8595a1', highlight: '#d2aa99' },
+        head: { shadow: '#757161', base: '#d2aa99', highlight: '#deeed6' },
+      },
+    },
+
+    // 19. overgrown_wall_tile_16
+    {
+      id: 'overgrown_wall_tile_16',
+      description: 'Tileable overgrown wall with vines and leaves.',
+      grid: [
+        'BBBBBBVVBBBBBBBB',
+        'BBBBBVLLVBBBBBB.',
+        'BBBBVVBBVVBBBBBB',
+        'BBBVBBBBBBVBBBBB',
+        'BBBVBBBBBBVBBBBB',
+        'BBBVBBBBBBVBBBBB',
+        'BBBBBBBBBBVBBBBB',
+        'BBBBBBBBBVBBBBBB',
+        'BBBBBBBBVBBBBBBB',
+        'BBBBBBBVBBBBBBBB',
+        'BBBBBBVBBBBBBBBB',
+        'BBBBBVBBBBBBBBBB',
+        'BBBBVLBBBBBBBBB.',
+        'BBBVLLBBBBBBBBB.',
+        'BBBBBVBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        V: { name: 'vine', role: 'accessory' },
+        L: { name: 'leaf', role: 'eye' },
+      },
+      colors: {
+        body:      { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        accessory: { shadow: '#346524', base: '#346524', highlight: '#346524' },
+        eye:       { shadow: '#346524', base: '#346524', highlight: '#6dc2ca' },
+      },
+    },
+
+    // 20. stucco_wall_tile_16
+    {
+      id: 'stucco_wall_tile_16',
+      description: 'Tileable stucco/plaster wall with rough texture.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBHBBBBBBBBB',
+        'BBBHBBBBBBBBHBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBHBBBBBB',
+        'BBHBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBHBBB',
+        'BBBBBHBBBBBBBBBB',
+        'BBBBBBBBHBBBBBBB',
+        'BBBHBBBBBBBBBBBB',
+        'BBBBBBBBBBHBBBBB',
+        'BBBBHBBBBBBBBHBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BHBBBBBBBBHBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'plaster', role: 'body' },
+        H: { name: 'texture', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#854c30', base: '#d2aa99', highlight: '#deeed6' },
+        head: { shadow: '#757161', base: '#d2aa99', highlight: '#d2aa99' },
+      },
+    },
+
+  ],
+};
+
+export default batch;

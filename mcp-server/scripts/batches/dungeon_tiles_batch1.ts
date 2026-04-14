@@ -1,0 +1,667 @@
+/**
+ * Dungeon Tiles batch 1 — 20 stone & brick floor tiles (seamless/tileable).
+ * Row 0 matches row 15, col 0 matches col 15 for seamless tiling.
+ */
+import type { BatchDefinition } from '../templateGenerator.js';
+
+const batch: BatchDefinition = {
+  category: 'dungeon_tiles',
+  exportNames: { templates: 'DUNGEON_TILES_BATCH1_TEMPLATES', schemes: 'DUNGEON_TILES_BATCH1_COLOR_SCHEMES' },
+  templates: [
+
+    // 1. cobblestone_floor_16
+    {
+      id: 'cobblestone_floor_16',
+      description: 'Tileable cobblestone floor with irregular stone pattern.',
+      grid: [
+        'BBBBSBBBBBBSBBBB',
+        'BBBBBBBBBBBBBSBB',
+        'SBBBBBBSBBBBBSBB',
+        'BBBSBBBBBBBBBSBB',
+        'BBBBBBBBSBBBBSBB',
+        'BBBBBBBBBSBBBBBB',
+        'BBBBBSBBBBBBBBSB',
+        'BSBBBBBBBBSBBBB.',
+        'BBBBBBBBBBBBBSBB',
+        'BBSBBBBBBBBBBBBB',
+        'BBBBBBBSBBBBSBBB',
+        'SBBBBBBBBSBBBBB.',
+        'BBBBBBBBBBBBBBSB',
+        'BBBSBBBBBBBSBBBB',
+        'BBBBBBSBBBBBBBB.',
+        'BBBBBBBBBSBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        S: { name: 'grout', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#4e4a4e', base: '#757161', highlight: '#8595a1' },
+        head: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+      },
+    },
+
+    // 2. flagstone_floor_16
+    {
+      id: 'flagstone_floor_16',
+      description: 'Tileable flagstone floor with large flat stones and grout lines.',
+      grid: [
+        'BBBBBBBBSBBBBBBB',
+        'BBBBBBBBSBBBBBBB',
+        'BBBBBBBBSBBBBBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBSBBBBBBBBBBB',
+        'BBBBSBBBBBBBBBBB',
+        'BBBBSBBBBBBBBBBB',
+        'BBBBSBBBBBBBBBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBBBBBBBSBBBBB',
+        'BBBBBBBBBBSBBBBB',
+        'BBBBBBBBBBSBBBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBBBBSBBBBBBB.',
+        'BBBBBBBSBBBBBBBB',
+        'BBBBBBBSBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        S: { name: 'grout', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#4e4a4e', base: '#8595a1', highlight: '#d2aa99' },
+        head: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+      },
+    },
+
+    // 3. brick_floor_16
+    {
+      id: 'brick_floor_16',
+      description: 'Tileable brick floor with offset running bond pattern.',
+      grid: [
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'SSSSSSSSSSSSSSSS',
+        'SBBBSBBBSBBBSBBB',
+        'SBBBSBBBSBBBSBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'SSSSSSSSSSSSSSSS',
+        'SBBBSBBBSBBBSBBB',
+        'SBBBSBBBSBBBSBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'SSSSSSSSSSSSSSSS',
+        'SBBBSBBBSBBBSBBB',
+      ],
+      chars: {
+        B: { name: 'brick', role: 'body' },
+        S: { name: 'mortar', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#854c30', highlight: '#d27d2c' },
+        head: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+      },
+    },
+
+    // 4. cracked_stone_floor_16
+    {
+      id: 'cracked_stone_floor_16',
+      description: 'Tileable cracked stone floor with damage lines.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBCBBBBBBBB.',
+        'BBBBBCCBBBBBBBBB',
+        'BBBBCBBBBBBCBBBB',
+        'BBBCBBBBBBBCBBBB',
+        'BBBBBBBBBBCCBBBB',
+        'BBBBBBBBBCBBBBBB',
+        'BBBBBBBBCBBBBBBB',
+        'BBBBBBBBCBBBBBBB',
+        'BBBBBBBCBBBBBBBB',
+        'BBCBBBBCBBBBBBBB',
+        'BBCBBCBBBBBBBBBB',
+        'BBBCCBBBBBBBBBBB',
+        'BBBBBBBBBBBBCBBB',
+        'BBBBBBBBBBBCCBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        C: { name: 'crack', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#4e4a4e', base: '#757161', highlight: '#8595a1' },
+        eye:  { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+      },
+    },
+
+    // 5. mossy_stone_floor_16
+    {
+      id: 'mossy_stone_floor_16',
+      description: 'Tileable stone floor with moss patches growing in cracks.',
+      grid: [
+        'BBBBBBBBSBBBBBBB',
+        'BBBMMBBBBBBBBBB.',
+        'BBMMMBBBBBBBBBB.',
+        'BBMMBBBBBBBBBBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBBBBBBBBBMMMB',
+        'BBBBBBBBBBBBMMBB',
+        'BBBBBBBBSBBBBBBB',
+        'BBBBBBBBSBBBBBB.',
+        'BBBBBBBBSBBBBBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBBBBMMBBBBBBB',
+        'BBBBBBBMBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBSBBBBBBBBBBB',
+        'BBBBSBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        S: { name: 'grout', role: 'head' },
+        M: { name: 'moss', role: 'accessory' },
+      },
+      colors: {
+        body:      { shadow: '#4e4a4e', base: '#757161', highlight: '#8595a1' },
+        head:      { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        accessory: { shadow: '#346524', base: '#346524', highlight: '#6dc2ca' },
+      },
+    },
+
+    // 6. marble_floor_16
+    {
+      id: 'marble_floor_16',
+      description: 'Tileable polished marble floor with subtle veining.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBVBBBBBB',
+        'BBBBBBBBVVBBBBBB',
+        'BBBBBBBVBBBVBBBB',
+        'BBBBBBVBBBBBVBBB',
+        'BBBBBBBBBBBBBVBB',
+        'BBBBBBBBBBBBBBBB',
+        'BVBBBBBBBBBBBBBB',
+        'BBVBBBBBBBBBBBBB',
+        'BBBVBBBBBBBBBBBB',
+        'BBBVVBBBBBBBBBB.',
+        'BBBBVBBBBVBBBBBB',
+        'BBBBBBBBBVVBBBBB',
+        'BBBBBBBBBBBVBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'marble', role: 'body' },
+        V: { name: 'vein', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#8595a1', base: '#d2aa99', highlight: '#deeed6' },
+        head: { shadow: '#757161', base: '#8595a1', highlight: '#d2aa99' },
+      },
+    },
+
+    // 7. tile_checker_floor_16
+    {
+      id: 'tile_checker_floor_16',
+      description: 'Tileable checkerboard floor pattern (classic dungeon).',
+      grid: [
+        'BBBBBBBBHHHHHHHH',
+        'BBBBBBBBHHHHHHHH',
+        'BBBBBBBBHHHHHHHH',
+        'BBBBBBBBHHHHHHHH',
+        'BBBBBBBBHHHHHHHH',
+        'BBBBBBBBHHHHHHHH',
+        'BBBBBBBBHHHHHHHH',
+        'BBBBBBBBHHHHHHHH',
+        'HHHHHHHHBBBBBBBB',
+        'HHHHHHHHBBBBBBBB',
+        'HHHHHHHHBBBBBBBB',
+        'HHHHHHHHBBBBBBBB',
+        'HHHHHHHHBBBBBBBB',
+        'HHHHHHHHBBBBBBBB',
+        'HHHHHHHHBBBBBBBB',
+        'HHHHHHHHBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'dark_tile', role: 'body' },
+        H: { name: 'light_tile', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        head: { shadow: '#757161', base: '#8595a1', highlight: '#d2aa99' },
+      },
+    },
+
+    // 8. slate_floor_16
+    {
+      id: 'slate_floor_16',
+      description: 'Tileable dark slate floor with layered texture.',
+      grid: [
+        'BBBBBBHBBBBBBBBB',
+        'BBBBBBBBBHBBBBBB',
+        'HBBBBBBBBBBBBBHB',
+        'BBBBHBBBBBBBBBBB',
+        'BBBBBBBBBBBHBBBB',
+        'BBBBBBBBHBBBBBBB',
+        'BBHBBBBBBBBBBBB.',
+        'BBBBBHBBBBBBHBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBHBBBBBB',
+        'HBBBBBBBBBBHBBBB',
+        'BBBHBBBBBBBBBBB.',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBBBBBBHBBB',
+        'BBHBBBBBBBBBBBBB',
+        'BBBBBBBBHBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'slate', role: 'body' },
+        H: { name: 'grain', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#30346d', base: '#4e4a4e', highlight: '#757161' },
+        head: { shadow: '#442434', base: '#4e4a4e', highlight: '#8595a1' },
+      },
+    },
+
+    // 9. sandstone_floor_16
+    {
+      id: 'sandstone_floor_16',
+      description: 'Tileable sandstone floor with warm desert tones.',
+      grid: [
+        'BBBBBSBBBBBBSBBB',
+        'BBBBBSBBBBBBSBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBSBBBBBBBSBBBB.',
+        'BBSBBBBBBBSBBBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBBSBBBBBSBBBB',
+        'BBBBBSBBBBBSBBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BSBBBBBBBSBBBBB.',
+        'BSBBBBBBBSBBBBBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBBBSBBBBBBBSBB',
+        'BBBBBSBBBBBBBSBB',
+        'SSSSSSSSSSSSSSSS',
+        'BBBSBBBBBBSBBBBB',
+      ],
+      chars: {
+        B: { name: 'sandstone', role: 'body' },
+        S: { name: 'grout', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#854c30', base: '#d27d2c', highlight: '#d2aa99' },
+        head: { shadow: '#442434', base: '#854c30', highlight: '#d27d2c' },
+      },
+    },
+
+    // 10. herringbone_brick_16
+    {
+      id: 'herringbone_brick_16',
+      description: 'Tileable herringbone brick pattern floor.',
+      grid: [
+        'AASSBBSSAASSBBSS',
+        'AASSBBSSAASSBBSS',
+        'SSAASSBBSSAASSBB',
+        'SSAASSBBSSAASSBB',
+        'BBSSAASSBBSSAASS',
+        'BBSSAASSBBSSAASS',
+        'SSBBSSAASSBBSSAA',
+        'SSBBSSAASSBBSSAA',
+        'AASSBBSSAASSBBSS',
+        'AASSBBSSAASSBBSS',
+        'SSAASSBBSSAASSBB',
+        'SSAASSBBSSAASSBB',
+        'BBSSAASSBBSSAASS',
+        'BBSSAASSBBSSAASS',
+        'SSBBSSAASSBBSSAA',
+        'SSBBSSAASSBBSSAA',
+      ],
+      chars: {
+        A: { name: 'brick_warm', role: 'body' },
+        B: { name: 'brick_cool', role: 'head' },
+        S: { name: 'mortar', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#854c30', highlight: '#d27d2c' },
+        head: { shadow: '#442434', base: '#854c30', highlight: '#d2aa99' },
+        eye:  { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+      },
+    },
+
+    // 11. granite_floor_16
+    {
+      id: 'granite_floor_16',
+      description: 'Tileable polished granite floor with speckled texture.',
+      grid: [
+        'BBHBBBBBBBHBBBBB',
+        'BBBBBHBBBBBBBHBB',
+        'BBBBBBBBHBBBBBBB',
+        'BHBBBBBBBBBHBBBB',
+        'BBBBBHBBBBBBBBB.',
+        'BBBBBBBBHBBBBHBB',
+        'BBBHBBBBBBBBBBBB',
+        'BBBBBBHBBBHBBBBB',
+        'BHBBBBBBBBBBBHBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBHBBBBBBBBBBBHB',
+        'BBBBBBBBBHBBBBBB',
+        'BBBBHBBBBBBBHBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BHBBBHBBBBBHBBBB',
+        'BBBBBBBBHBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'granite', role: 'body' },
+        H: { name: 'speckle', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#4e4a4e', base: '#757161', highlight: '#8595a1' },
+        head: { shadow: '#757161', base: '#8595a1', highlight: '#d2aa99' },
+      },
+    },
+
+    // 12. obsidian_floor_16
+    {
+      id: 'obsidian_floor_16',
+      description: 'Tileable dark obsidian floor with glassy reflections.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBHBBBBB',
+        'BBBBBHBBBHHBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBHBBBBBBBBBBBBB',
+        'BBHHBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBHBB',
+        'BBBBBBBBBBBBHHBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBHBBBBBBBBBBB',
+        'BBBHHBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'obsidian', role: 'body' },
+        H: { name: 'reflection', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#140c1c', base: '#30346d', highlight: '#4e4a4e' },
+        head: { shadow: '#30346d', base: '#597dce', highlight: '#6dc2ca' },
+      },
+    },
+
+    // 13. dungeon_grate_floor_16
+    {
+      id: 'dungeon_grate_floor_16',
+      description: 'Tileable metal grate floor with dark void beneath.',
+      grid: [
+        'BBEBBBEBBBEBBBEB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'EBBBEBBBEBBBEBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBEBBBEBBBEBBBEB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'EBBBEBBBEBBBEBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBEBBBEBBBEBBBEB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'EBBBEBBBEBBBEBBB',
+      ],
+      chars: {
+        B: { name: 'grate', role: 'body' },
+        E: { name: 'void', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        eye:  { shadow: '#140c1c', base: '#140c1c', highlight: '#30346d' },
+      },
+    },
+
+    // 14. worn_tile_floor_16
+    {
+      id: 'worn_tile_floor_16',
+      description: 'Tileable worn ceramic tiles with chipped edges.',
+      grid: [
+        'SSSSSSSSHHHHHHHH',
+        'SBBBBBBSHAAAAAAH',
+        'SBBBBBBSHAAAAAAH',
+        'SBBBBBBSHAAAAAAH',
+        'SBBBBBBSHAAAAAAH',
+        'SBBBBBBSHAAAAAAH',
+        'SBBBBBBSHAAAAAAH',
+        'SSSSSSSSHHHHHHHH',
+        'HHHHHHHHSSSSSSSS',
+        'HAAAAAA.SBBBBBBS',
+        'HAAAAAA.SBBBBBBS',
+        'HAAAAAA.SBBBBBBS',
+        'HAAAAAA.SBBBBBBS',
+        'HAAAAAA.SBBBBBBS',
+        'HAAAAAA.SBBBBBBS',
+        'HHHHHHHHSSSSSSSS',
+      ],
+      chars: {
+        B: { name: 'tile_a', role: 'body' },
+        A: { name: 'tile_b', role: 'accessory' },
+        S: { name: 'grout_a', role: 'head' },
+        H: { name: 'grout_b', role: 'eye' },
+      },
+      colors: {
+        body:      { shadow: '#4e4a4e', base: '#757161', highlight: '#8595a1' },
+        accessory: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        head:      { shadow: '#442434', base: '#4e4a4e', highlight: '#4e4a4e' },
+        eye:       { shadow: '#442434', base: '#4e4a4e', highlight: '#4e4a4e' },
+      },
+    },
+
+    // 15. rough_hewn_floor_16
+    {
+      id: 'rough_hewn_floor_16',
+      description: 'Tileable rough-hewn natural stone floor.',
+      grid: [
+        'BBBHBBBBBBBBHBBB',
+        'BBBBBBBHBBBBBBBB',
+        'HBBBBBBBBBBBBBHB',
+        'BBBBBHBBBBHBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBHBBBBBBBBBBHBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBHBBBBBHBBBBB',
+        'BBBBBBBBBBBBBHBB',
+        'BHBBBBBBBBBBBBB.',
+        'BBBBBHBBBHBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBHBBBBBBHBBBBB',
+        'BBBBBBHBBBBBBBBB',
+        'HBBBBBBBBBBBHBBB',
+        'BBBBBBBHBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        H: { name: 'chip', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        head: { shadow: '#442434', base: '#442434', highlight: '#4e4a4e' },
+      },
+    },
+
+    // 16. bloodstone_floor_16
+    {
+      id: 'bloodstone_floor_16',
+      description: 'Tileable dark stone floor with red bloodstain patches.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBRRBBBBBBBBBB.',
+        'BBRRRBBBBBBBBBBB',
+        'BBBRRBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBRRBB.',
+        'BBBBBBBBBBRRRBBB',
+        'BBBBBBBBBBBRRBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBRBBBBBBBBBBBB.',
+        'BBRRBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        R: { name: 'blood', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        eye:  { shadow: '#442434', base: '#d04648', highlight: '#d27d2c' },
+      },
+    },
+
+    // 17. frozen_stone_floor_16
+    {
+      id: 'frozen_stone_floor_16',
+      description: 'Tileable frozen stone floor with ice patches.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBIIBBBBBBBBBBB.',
+        'BBIIIBBBBBBBBBB.',
+        'BBIIBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBIIBBBBB',
+        'BBBBBBBBIIIBBBB.',
+        'BBBBBBBBBIIBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBIIBBBBBBBBB',
+        'BBBBIIIBBBBBBBB.',
+        'BBBBBIIBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        I: { name: 'ice', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#4e4a4e', base: '#757161', highlight: '#8595a1' },
+        head: { shadow: '#597dce', base: '#6dc2ca', highlight: '#deeed6' },
+      },
+    },
+
+    // 18. ash_floor_16
+    {
+      id: 'ash_floor_16',
+      description: 'Tileable ashen floor with scattered ember specks.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBEBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBEBBB.',
+        'BBEBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBEBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBEBBBBBBBBBBB',
+        'BBBBBBBBBBBBEEBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBB.',
+        'BBEBBBBBBBBBBBB.',
+        'BBBBBBBBBEBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'ash', role: 'body' },
+        E: { name: 'ember', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        eye:  { shadow: '#d04648', base: '#d27d2c', highlight: '#dad45e' },
+      },
+    },
+
+    // 19. mosaic_floor_16
+    {
+      id: 'mosaic_floor_16',
+      description: 'Tileable mosaic floor with colored tile pattern.',
+      grid: [
+        'AABBCCDDAABBCCDD',
+        'AABBCCDDAABBCCDD',
+        'CCDDAABBCCDDAABB',
+        'CCDDAABBCCDDAABB',
+        'AABBCCDDAABBCCDD',
+        'AABBCCDDAABBCCDD',
+        'CCDDAABBCCDDAABB',
+        'CCDDAABBCCDDAABB',
+        'AABBCCDDAABBCCDD',
+        'AABBCCDDAABBCCDD',
+        'CCDDAABBCCDDAABB',
+        'CCDDAABBCCDDAABB',
+        'AABBCCDDAABBCCDD',
+        'AABBCCDDAABBCCDD',
+        'CCDDAABBCCDDAABB',
+        'CCDDAABBCCDDAABB',
+      ],
+      chars: {
+        A: { name: 'tile_blue', role: 'body' },
+        B: { name: 'tile_gold', role: 'head' },
+        C: { name: 'tile_red', role: 'eye' },
+        D: { name: 'tile_cream', role: 'accessory' },
+      },
+      colors: {
+        body:      { shadow: '#30346d', base: '#597dce', highlight: '#6dc2ca' },
+        head:      { shadow: '#854c30', base: '#d27d2c', highlight: '#dad45e' },
+        eye:       { shadow: '#442434', base: '#d04648', highlight: '#d2aa99' },
+        accessory: { shadow: '#757161', base: '#d2aa99', highlight: '#deeed6' },
+      },
+    },
+
+    // 20. clay_floor_16
+    {
+      id: 'clay_floor_16',
+      description: 'Tileable packed clay floor with subtle grain variation.',
+      grid: [
+        'BBBBHBBBBHBBBBBB',
+        'BBBBBBBBBBBBBHBB',
+        'BHBBBBBBBBBBBBBB',
+        'BBBBBBHBBBBBBBB.',
+        'BBBBBBBBBHBBBBBB',
+        'BBHBBBBBBBBBBHBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBHBBBBBBBBBBB',
+        'BBBBBBBBBHBBBBBB',
+        'BBBBBBBBBBBBHBBB',
+        'BHBBBBBBBBBBBBB.',
+        'BBBBBHBBBBBBBBBB',
+        'BBBBBBBBHBBBBBBB',
+        'BBBBBBBBBBBHBBBB',
+        'BHBBBBBBBBBBBBBB',
+        'BBBBBBHBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'clay', role: 'body' },
+        H: { name: 'grain', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#854c30', base: '#d2aa99', highlight: '#deeed6' },
+        head: { shadow: '#442434', base: '#854c30', highlight: '#d27d2c' },
+      },
+    },
+
+  ],
+};
+
+export default batch;

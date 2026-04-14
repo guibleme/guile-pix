@@ -1,0 +1,665 @@
+/**
+ * Dungeon Tiles batch 4 — 20 special/themed floor tiles (seamless/tileable).
+ * Row 0 matches row 15, col 0 matches col 15 for seamless tiling.
+ */
+import type { BatchDefinition } from '../templateGenerator.js';
+
+const batch: BatchDefinition = {
+  category: 'dungeon_tiles',
+  exportNames: { templates: 'DUNGEON_TILES_BATCH4_TEMPLATES', schemes: 'DUNGEON_TILES_BATCH4_COLOR_SCHEMES' },
+  templates: [
+
+    // 1. trap_floor_tile_16
+    {
+      id: 'trap_floor_tile_16',
+      description: 'Tileable trap floor with pressure plate pattern.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBHHHHHHHHHHBBB',
+        'BBBHBBBBBBBBHBBB',
+        'BBBHBBBBBBBBHBBB',
+        'BBBHBBBBBBBBHBBB',
+        'BBBHBBBBBBBBHBBB',
+        'BBBHBBBBBBBBHBBB',
+        'BBBHBBBBBBBBHBBB',
+        'BBBHBBBBBBBBHBBB',
+        'BBBHBBBBBBBBHBBB',
+        'BBBHHHHHHHHHHBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'floor', role: 'body' },
+        H: { name: 'plate_edge', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        head: { shadow: '#4e4a4e', base: '#8595a1', highlight: '#d2aa99' },
+      },
+    },
+
+    // 2. magic_circle_tile_16
+    {
+      id: 'magic_circle_tile_16',
+      description: 'Tileable arcane circle floor pattern.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBRRRRRBBBBB.',
+        'BBBBRBBBBBRBBBBB',
+        'BBBRBBBBBBBRBBB.',
+        'BBBRBBBBBBBRBBBB',
+        'BBBRBBBBBBBRBBBB',
+        'BBBRBBBBBBBRBBBB',
+        'BBBRBBBBBBBRBBBB',
+        'BBBRBBBBBBBRBBBB',
+        'BBBRBBBBBBBRBBB.',
+        'BBBBRBBBBBRBBBBB',
+        'BBBBBRRRRRBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'floor', role: 'body' },
+        R: { name: 'rune', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        eye:  { shadow: '#30346d', base: '#597dce', highlight: '#6dc2ca' },
+      },
+    },
+
+    // 3. carpet_tile_16
+    {
+      id: 'carpet_tile_16',
+      description: 'Tileable ornate carpet with repeating border motif.',
+      grid: [
+        'EBBBBBBBBBBBBBBE',
+        'BEBBBBBBBBBBBBEB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BEBBBBBBBBBBBBEB',
+        'EBBBBBBBBBBBBBBE',
+      ],
+      chars: {
+        B: { name: 'carpet', role: 'body' },
+        E: { name: 'border', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#d04648', highlight: '#d2aa99' },
+        eye:  { shadow: '#854c30', base: '#d27d2c', highlight: '#dad45e' },
+      },
+    },
+
+    // 4. wood_floor_tile_16
+    {
+      id: 'wood_floor_tile_16',
+      description: 'Tileable wooden plank floor with grain texture.',
+      grid: [
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BHBSBBBSBBHSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSHBBSBBBSBBHS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBHBSBBBSBHBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBHSBBBS',
+        'BHBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBBSBBBSBBBS',
+        'BBBSBBHSBBBSBBBS',
+      ],
+      chars: {
+        B: { name: 'plank', role: 'body' },
+        S: { name: 'gap', role: 'head' },
+        H: { name: 'knot', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#854c30', highlight: '#d27d2c' },
+        head: { shadow: '#140c1c', base: '#442434', highlight: '#442434' },
+        eye:  { shadow: '#442434', base: '#854c30', highlight: '#854c30' },
+      },
+    },
+
+    // 5. sewer_floor_tile_16
+    {
+      id: 'sewer_floor_tile_16',
+      description: 'Tileable sewer floor with water channel groove.',
+      grid: [
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+        'BBBBBBWWWWBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        W: { name: 'water', role: 'accessory' },
+      },
+      colors: {
+        body:      { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        accessory: { shadow: '#30346d', base: '#346524', highlight: '#597dce' },
+      },
+    },
+
+    // 6. crypt_floor_tile_16
+    {
+      id: 'crypt_floor_tile_16',
+      description: 'Tileable crypt floor with engraved cross pattern.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBCCBBBBBBB',
+        'BBBBBBBCCBBBBBBB',
+        'BBBBBBBCCBBBBBBB',
+        'BBBCCCCCCCCCCBBB',
+        'BBBCCCCCCCCCCBBB',
+        'BBBBBBBCCBBBBBBB',
+        'BBBBBBBCCBBBBBBB',
+        'BBBBBBBCCBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        C: { name: 'cross', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+        head: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+      },
+    },
+
+    // 7. library_floor_tile_16
+    {
+      id: 'library_floor_tile_16',
+      description: 'Tileable polished library floor with diamond inlay.',
+      grid: [
+        'BBBBBBBDBBBBBBB.',
+        'BBBBBBDDDBBBBBB.',
+        'BBBBBDDDDDBBBBBB',
+        'BBBBDDDDDDDBBBB.',
+        'BBBDDDDDDDDDBBBB',
+        'BBDDDDDDDDDDDBB.',
+        'BDDDDDDDDDDDDDBB',
+        'DDDDDDDDDDDDDDD.',
+        'BDDDDDDDDDDDDDBB',
+        'BBDDDDDDDDDDDBB.',
+        'BBBDDDDDDDDDBBBB',
+        'BBBBDDDDDDDBBBB.',
+        'BBBBBDDDDDBBBBBB',
+        'BBBBBBDDDBBBBBB.',
+        'BBBBBBBDBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'dark_wood', role: 'body' },
+        D: { name: 'light_wood', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#854c30', highlight: '#854c30' },
+        head: { shadow: '#854c30', base: '#d27d2c', highlight: '#d2aa99' },
+      },
+    },
+
+    // 8. forge_floor_tile_16
+    {
+      id: 'forge_floor_tile_16',
+      description: 'Tileable forge floor with soot and heat marks.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBSSBBBBBBBBBB.',
+        'BBSSSBBBBBBBBBBB',
+        'BBBSSBBBBBBBBBBB',
+        'BBBBBBBBBBSSBBBB',
+        'BBBBBBBBBSSSBBBB',
+        'BBBBBBBBBBSSBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBSSBBBBBBBBB',
+        'BBBBSSSBBBBBSSBB',
+        'BBBBBBBBBBBBSSSB',
+        'BBBBBBBBBBBBSSBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        S: { name: 'soot', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        head: { shadow: '#140c1c', base: '#140c1c', highlight: '#442434' },
+      },
+    },
+
+    // 9. throne_tile_16
+    {
+      id: 'throne_tile_16',
+      description: 'Tileable royal throne room floor with golden inlay.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BGBBBBBBBBBBBBGB',
+        'BBGBBBBBBBBBBGBB',
+        'BBBGBBBBBBBBGBBB',
+        'BBBBGBBBBBBGBBBB',
+        'BBBBBGBBBBGBBBBB',
+        'BBBBBBGBBGBBBBBB',
+        'BBBBBBBGGBBBBBBB',
+        'BBBBBBBGGBBBBBBB',
+        'BBBBBBGBBGBBBBBB',
+        'BBBBBGBBBBGBBBBB',
+        'BBBBGBBBBBBGBBBB',
+        'BBBGBBBBBBBBGBBB',
+        'BBGBBBBBBBBBBGBB',
+        'BGBBBBBBBBBBBBGB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'marble', role: 'body' },
+        G: { name: 'gold', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#4e4a4e', base: '#8595a1', highlight: '#d2aa99' },
+        eye:  { shadow: '#854c30', base: '#d27d2c', highlight: '#dad45e' },
+      },
+    },
+
+    // 10. summoning_tile_16
+    {
+      id: 'summoning_tile_16',
+      description: 'Tileable summoning circle floor with pentagram lines.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBRRRRRBBBBB.',
+        'BBBBRBBBBBRBBBB.',
+        'BBBRBBRRRBBRBBB.',
+        'BBRBBRRBRRBBRBB.',
+        'BBRBRBBBBRBBRBB.',
+        'BBRBBBBBBBBRBBB.',
+        'BBRBBRBBBRBBRBBB',
+        'BBRBBBRBRBBBRBB.',
+        'BBRBBBBRBBBBRBBB',
+        'BBRBBBBBBBBRBBB.',
+        'BBBRBBBBBBRBBBB.',
+        'BBBBRBBBBBRBBBB.',
+        'BBBBBRRRRRBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        R: { name: 'rune', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+        eye:  { shadow: '#d04648', base: '#d04648', highlight: '#d27d2c' },
+      },
+    },
+
+    // 11. poison_floor_tile_16
+    {
+      id: 'poison_floor_tile_16',
+      description: 'Tileable poisonous floor with toxic puddles.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBPPBBBBB',
+        'BBBBBBBBPPPBBBBB',
+        'BBBBBBBBBPPBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BPPBBBBBBBBBBBBB',
+        'PPPPBBBBBBBBBBBB',
+        'BPPBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBPBB',
+        'BBBBBBBBBBBBPPBB',
+        'BBBBBBBBBBBBBPBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBPBBBBBBBBBBBB.',
+        'BPPPBBBBBBBBBBB.',
+        'BBPBBBBBBBBBBBB.',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        P: { name: 'poison', role: 'accessory' },
+      },
+      colors: {
+        body:      { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        accessory: { shadow: '#346524', base: '#346524', highlight: '#dad45e' },
+      },
+    },
+
+    // 12. mirror_floor_tile_16
+    {
+      id: 'mirror_floor_tile_16',
+      description: 'Tileable reflective mirror floor with bright sheen.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBHHBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBHBBB',
+        'BBBBBBBBBBBHHBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BHBBBBBBBBBBBBBB',
+        'BHHBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBHBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBHBBBB',
+        'BBBBBBBBBBHHBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'mirror', role: 'body' },
+        H: { name: 'reflection', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#597dce', base: '#8595a1', highlight: '#d2aa99' },
+        head: { shadow: '#8595a1', base: '#d2aa99', highlight: '#deeed6' },
+      },
+    },
+
+    // 13. sacrificial_tile_16
+    {
+      id: 'sacrificial_tile_16',
+      description: 'Tileable sacrificial altar floor with blood channels.',
+      grid: [
+        'BBBBBBBRBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'RBBBBBBBBBBBBBBR',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBRBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'RBBBBBBBBBBBBBBR',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        R: { name: 'blood', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#140c1c', base: '#442434', highlight: '#4e4a4e' },
+        eye:  { shadow: '#442434', base: '#d04648', highlight: '#d27d2c' },
+      },
+    },
+
+    // 14. clockwork_floor_tile_16
+    {
+      id: 'clockwork_floor_tile_16',
+      description: 'Tileable clockwork mechanism floor with gears.',
+      grid: [
+        'BBBBBGGGGGGBBBBB',
+        'BBBBGBBBBBBGBBBB',
+        'BBBGBBBBBBBBGBBB',
+        'BBGBBBBBBBBBBBBB',
+        'BGBBBBBBBBBBBBGB',
+        'GBBBBBBBBBBBBBEG',
+        'GBBBBBBBBBBBBBBG',
+        'GBBBBBBBBBBBBBEG',
+        'GBBBBBBBBBBBBBEG',
+        'GBBBBBBBBBBBBBBG',
+        'GBBBBBBBBBBBBBEG',
+        'BGBBBBBBBBBBBBGB',
+        'BBGBBBBBBBBBGBB.',
+        'BBBGBBBBBBBBGBBB',
+        'BBBBGBBBBBBGBBBB',
+        'BBBBBGGGGGGBBBBB',
+      ],
+      chars: {
+        B: { name: 'floor', role: 'body' },
+        G: { name: 'gear_rim', role: 'head' },
+        E: { name: 'gear_teeth', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        head: { shadow: '#4e4a4e', base: '#8595a1', highlight: '#d2aa99' },
+        eye:  { shadow: '#757161', base: '#d2aa99', highlight: '#deeed6' },
+      },
+    },
+
+    // 15. corrupted_floor_tile_16
+    {
+      id: 'corrupted_floor_tile_16',
+      description: 'Tileable corrupted floor with dark tendrils spreading.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBCCBBB',
+        'BBBBBBBBBBCCCBB.',
+        'BBBBBBBBBCCBBBB.',
+        'BBBBBBBBCBBBBBBB',
+        'BBBBBBBCBBBBBBBB',
+        'BBBBBBCBBBBBBBBB',
+        'BBBBBCBBBBBBBBBB',
+        'BBBBCBBBBBBBBBBB',
+        'BBBCBBBBBBBBBBBB',
+        'BBCBBBBBBBBBBBBB',
+        'BCCBBBBBBBBBBBB.',
+        'BCCCBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        C: { name: 'corruption', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        eye:  { shadow: '#140c1c', base: '#442434', highlight: '#30346d' },
+      },
+    },
+
+    // 16. chapel_floor_tile_16
+    {
+      id: 'chapel_floor_tile_16',
+      description: 'Tileable chapel floor with sacred cross motif.',
+      grid: [
+        'BBBBBBBHBBBBBBB.',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'HHHHHHHHHHHHHHHH',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+        'BBBBBBBHBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'marble', role: 'body' },
+        H: { name: 'gold_line', role: 'head' },
+      },
+      colors: {
+        body: { shadow: '#8595a1', base: '#d2aa99', highlight: '#deeed6' },
+        head: { shadow: '#854c30', base: '#d27d2c', highlight: '#dad45e' },
+      },
+    },
+
+    // 17. kitchen_tile_16
+    {
+      id: 'kitchen_tile_16',
+      description: 'Tileable kitchen floor with alternating tile pattern.',
+      grid: [
+        'BBBBBBBBHHHHHHHH',
+        'BBBBBBBBHHHHHHHH',
+        'BBBBBBBBHHHHHHHH',
+        'SSSSSSSSSSSSSSS.',
+        'HHHHHHHHBBBBBBBB',
+        'HHHHHHHHBBBBBBBB',
+        'HHHHHHHHBBBBBBBB',
+        'SSSSSSSSSSSSSSS.',
+        'BBBBBBBBHHHHHHHH',
+        'BBBBBBBBHHHHHHHH',
+        'BBBBBBBBHHHHHHHH',
+        'SSSSSSSSSSSSSSS.',
+        'HHHHHHHHBBBBBBBB',
+        'HHHHHHHHBBBBBBBB',
+        'HHHHHHHHBBBBBBBB',
+        'SSSSSSSSSSSSSSS.',
+      ],
+      chars: {
+        B: { name: 'tile_light', role: 'body' },
+        H: { name: 'tile_dark', role: 'head' },
+        S: { name: 'grout', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#757161', base: '#d2aa99', highlight: '#deeed6' },
+        head: { shadow: '#854c30', base: '#d27d2c', highlight: '#d2aa99' },
+        eye:  { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+      },
+    },
+
+    // 18. prison_floor_tile_16
+    {
+      id: 'prison_floor_tile_16',
+      description: 'Tileable prison floor with drain grate.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBGGGGGGBBBBB',
+        'BBBBBGEGEGEGBBBB',
+        'BBBBBGGGGGGBBBBB',
+        'BBBBBGEGEGEGBBBB',
+        'BBBBBGGGGGGBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        G: { name: 'grate', role: 'head' },
+        E: { name: 'void', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        head: { shadow: '#4e4a4e', base: '#757161', highlight: '#8595a1' },
+        eye:  { shadow: '#140c1c', base: '#140c1c', highlight: '#442434' },
+      },
+    },
+
+    // 19. treasure_floor_tile_16
+    {
+      id: 'treasure_floor_tile_16',
+      description: 'Tileable treasure room floor with gold dust specks.',
+      grid: [
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBGBBBBBBBB',
+        'BBGBBBBBBBBBBBB.',
+        'BBBBBBBBBBGBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBGBBBBBBBBBBGB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBBGBBBBBB',
+        'BBBBGBBBBBBBBBB.',
+        'BBBBBBBBBBBBBGBB',
+        'BGBBBBBBBBBBBBBB',
+        'BBBBBBBGBBBBBBB.',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBGBBBBBBGBBB',
+        'BBBBBBBBBBBBBBBB',
+        'BBBBBBBBGBBBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        G: { name: 'gold_dust', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        eye:  { shadow: '#854c30', base: '#d27d2c', highlight: '#dad45e' },
+      },
+    },
+
+    // 20. ancient_ruin_tile_16
+    {
+      id: 'ancient_ruin_tile_16',
+      description: 'Tileable ancient ruin floor with faded carved symbols.',
+      grid: [
+        'BBBBBSBBBBBBSBBB',
+        'BBBBBSBBBBBBSBBB',
+        'SSSSSSSSSSSSSSS.',
+        'BBBHBBBBBBHBBBBB',
+        'BBBHBBBBBBHBBBBB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBSBBBBBBSBBB',
+        'BBBBBSBBBBBBSBBB',
+        'SSSSSSSSSSSSSSS.',
+        'BBBBBBHBBBBBBBHB',
+        'BBBBBBHBBBBBBBHB',
+        'BBBBBBBBBBBBBBB.',
+        'BBBBBSBBBBBBSBBB',
+        'BBBBBSBBBBBBSBBB',
+        'SSSSSSSSSSSSSSS.',
+        'BBBHBBBBBBHBBBBB',
+      ],
+      chars: {
+        B: { name: 'stone', role: 'body' },
+        S: { name: 'grout', role: 'head' },
+        H: { name: 'symbol', role: 'eye' },
+      },
+      colors: {
+        body: { shadow: '#442434', base: '#757161', highlight: '#8595a1' },
+        head: { shadow: '#442434', base: '#4e4a4e', highlight: '#757161' },
+        eye:  { shadow: '#4e4a4e', base: '#757161', highlight: '#8595a1' },
+      },
+    },
+
+  ],
+};
+
+export default batch;

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "dogsprite-pixel-art": {
+      "command": "node",
+      "args": ["mcp-server/dist/index.js"],
+      "cwd": "."
+    }
+  }
+}

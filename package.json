@@ -1,0 +1,41 @@
+{
+  "name": "dogsprite",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "icons:build": "cd mcp-server && npx tsx scripts/exportEditorIcons.ts",
+    "quality": "npm run typecheck && npm run lint && npm run test:unit && npm run build",
+    "sprites:build": "tsx scripts/buildSpriteLibrary.ts"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1",
+    "gifenc": "^1.0.3",
+    "lucide-react": "^0.564.0",
+    "nanoid": "^5.1.6",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-resizable-panels": "^4.10.0",
+    "zustand": "^5.0.11"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^3.2.4"
+  }
+}

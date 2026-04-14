@@ -1,0 +1,73 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+/playwright-report
+/test-results
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# internal reference materials
+/_reference/
+CLAUDE.md
+plan.txt
+
+# local dev config
+.claude/settings.local.json
+
+# temp files
+.dotnet/
+files/
+mcp-server/_gen_err.txt
+
+# archived game engine (not public)
+mcp-server/src/game/
+mcp-server/src/gameTools/
+
+# internal docs
+docs/ROGUELITE_GDD.md
+docs/ROGUELITE_TECH_ARCHITECTURE.md
+docs/SEO.md
+docs/mira.png
+
+# Google Search Console verification
+public/google*.html
+
+# MCP test scripts (game engine)
+mcp-server/test-*.mjs
+mcp-server/gen-*.mjs

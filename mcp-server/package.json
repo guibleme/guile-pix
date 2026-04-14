@@ -1,0 +1,22 @@
+{
+  "name": "dogsprite-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for programmatic pixel art generation in DogSprite",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && node -e \"const fs=require('fs');const s='src/game/export/runtime-js';const d='dist/game/export/runtime-js';if(fs.existsSync(s)){fs.cpSync(s,d,{recursive:true});console.log('Copied runtime-js to dist/')}\"",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "gifenc": "^1.0.3",
+    "pngjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pngjs": "^6.0.5",
+    "typescript": "^5.7.0"
+  }
+}

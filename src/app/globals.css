@@ -1,0 +1,182 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--ui-background);
+  --color-foreground: var(--ui-foreground);
+  --color-surface: var(--ui-surface);
+  --color-surface-hover: var(--ui-surface-hover);
+  --color-border: var(--ui-border);
+  --color-border-light: var(--ui-border-light);
+  --color-accent: var(--ui-accent);
+  --color-accent-hover: var(--ui-accent-hover);
+  --color-danger: var(--ui-danger);
+  --color-success: var(--ui-success);
+  --color-warning: var(--ui-warning);
+  --color-muted: var(--ui-muted);
+  --font-sans: var(--font-inter), var(--font-geist-mono), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "Consolas", "Cascadia Mono", monospace;
+}
+
+/* ── DogSprite 2026 – Warm Amber / Lavender theme ── */
+
+:root,
+[data-theme="light"] {
+  --ui-background: #faf8f6;
+  --ui-foreground: #1a1528;
+  --ui-surface: #ffffff;
+  --ui-surface-hover: #f5f0fb;
+  --ui-border: #e4ddf0;
+  --ui-border-light: #d4cbea;
+  --ui-accent: #e8940f;
+  --ui-accent-hover: #f5a623;
+  --ui-danger: #ef4444;
+  --ui-success: #22c55e;
+  --ui-warning: #f59e0b;
+  --ui-muted: #7b6e9e;
+  --ui-body-grad-a: rgba(245, 166, 35, 0.14);
+  --ui-body-grad-b: rgba(180, 140, 220, 0.12);
+  --ui-body-grad-c: rgba(232, 123, 232, 0.10);
+  --ui-checker-a: #f6f0fa;
+  --ui-checker-b: #e5daef;
+  --ui-chrome-gradient: linear-gradient(90deg, rgba(245, 166, 35, 0.08), rgba(180, 140, 220, 0.06));
+  --ui-panel-header-gradient: linear-gradient(90deg, rgba(245, 166, 35, 0.06), rgba(180, 140, 220, 0.05));
+  --ui-accent-gradient: linear-gradient(135deg, #f5a623, #ff7eb3);
+  --ui-accent-gradient-hover: linear-gradient(135deg, #ffbe4a, #ff9cc5);
+  --ui-logo-gradient: linear-gradient(135deg, #f5a623, #e87be8);
+  --ui-shadow: 0 14px 34px rgba(90, 60, 120, 0.10);
+  --ui-workspace-mask: rgba(26, 21, 40, 0.10);
+  --ui-overlay: rgba(26, 21, 40, 0.22);
+}
+
+[data-theme="dark"] {
+  --ui-background: #06050a;
+  --ui-foreground: #f0ecf8;
+  --ui-surface: #110e18;
+  --ui-surface-hover: #1a1525;
+  --ui-border: #2a2240;
+  --ui-border-light: #3d3360;
+  --ui-accent: #f5a623;
+  --ui-accent-hover: #ffbe4a;
+  --ui-danger: #ff6b6b;
+  --ui-success: #6ee7a0;
+  --ui-warning: #f5a623;
+  --ui-muted: #9b8ec4;
+  --ui-body-grad-a: rgba(245, 166, 35, 0.10);
+  --ui-body-grad-b: rgba(140, 100, 200, 0.08);
+  --ui-body-grad-c: rgba(232, 123, 232, 0.06);
+  --ui-checker-a: #2d2645;
+  --ui-checker-b: #1b1630;
+  --ui-chrome-gradient: linear-gradient(90deg, rgba(245, 166, 35, 0.06), rgba(140, 100, 200, 0.05));
+  --ui-panel-header-gradient: linear-gradient(90deg, rgba(245, 166, 35, 0.05), rgba(140, 100, 200, 0.05));
+  --ui-accent-gradient: linear-gradient(135deg, #f5a623, #e87be8);
+  --ui-accent-gradient-hover: linear-gradient(135deg, #ffbe4a, #f09cf0);
+  --ui-logo-gradient: linear-gradient(135deg, #ffbe4a, #e87be8);
+  --ui-shadow: 0 16px 36px rgba(6, 5, 10, 0.54);
+  --ui-workspace-mask: rgba(0, 0, 0, 0.3);
+  --ui-overlay: rgba(0, 0, 0, 0.62);
+}
+
+body {
+  background: var(--color-background);
+  background-image:
+    radial-gradient(1200px 520px at 18% -8%, var(--ui-body-grad-a), transparent 56%),
+    radial-gradient(920px 420px at 86% -14%, var(--ui-body-grad-b), transparent 60%),
+    radial-gradient(900px 420px at 50% 110%, var(--ui-body-grad-c), transparent 62%);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  overflow: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-border-light) 70%, transparent);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-light);
+}
+
+/* Prevent text selection on UI elements */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Canvas cursor styles */
+.cursor-crosshair { cursor: crosshair; }
+.cursor-cell { cursor: cell; }
+.cursor-grab { cursor: grab; }
+.cursor-grabbing { cursor: grabbing; }
+
+/* Checkerboard pattern for transparency */
+.checkerboard {
+  background-image: linear-gradient(
+    45deg,
+    var(--ui-checker-a) 25%,
+    var(--ui-checker-b) 25%,
+    var(--ui-checker-b) 50%,
+    var(--ui-checker-a) 50%,
+    var(--ui-checker-a) 75%,
+    var(--ui-checker-b) 75%,
+    var(--ui-checker-b) 100%
+  );
+  background-size: 16px 16px;
+  background-position: 0 0;
+}
+
+/* DogSprite mascot tail wag animation */
+@keyframes tail-wag {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+
+@keyframes float-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.animate-tail-wag {
+  animation: tail-wag 0.6s ease-in-out infinite;
+  transform-origin: left center;
+}
+
+.animate-float-bounce {
+  animation: float-bounce 2s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Locale select popup readability across platforms */
+.menu-locale-select {
+  color: #1a1528 !important;
+  background: #ffffff !important;
+  border-radius: 4px;
+  padding-inline: 4px;
+}
+
+.menu-locale-select option {
+  color: #1a1528 !important;
+  background: #ffffff !important;
+}

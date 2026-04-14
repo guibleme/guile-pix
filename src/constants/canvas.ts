@@ -1,0 +1,15 @@
+export const MIN_ZOOM = 1;
+export const MAX_ZOOM = 64;
+export const DEFAULT_ZOOM = 8;
+export const ZOOM_STEP = 2;
+export const GRID_COLOR_LIGHT = 'rgba(26, 21, 40, 0.24)';
+export const GRID_COLOR_DARK = 'rgba(240, 236, 248, 0.24)';
+export const GRID_MIN_ZOOM = 4;
+export const CANVAS_BG_COLOR = '#1a1a2e';
+export const TILE_GRID_COLOR_LIGHT = 'rgba(200, 80, 80, 0.5)';
+export const TILE_GRID_COLOR_DARK = 'rgba(120, 200, 255, 0.45)';
+export const TILE_GRID_DEFAULT_WIDTH = 16;
+export const TILE_GRID_DEFAULT_HEIGHT = 16;
+export const ONION_SKIN_OPACITY = 0.3;
+export const ONION_SKIN_PREV_COLOR = 'rgba(255, 0, 0, 0.3)';
+export const ONION_SKIN_NEXT_COLOR = 'rgba(0, 0, 255, 0.3)';
