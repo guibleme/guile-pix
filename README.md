@@ -24,6 +24,8 @@
 
 DogSprite is a **100% free, offline pixel art sprite editor** that runs entirely in your browser. No servers, no subscriptions, no data collection. Your art stays on your machine.
 
+> **Privacy note:** The hosted version at dogsprite.org includes [Vercel Analytics](https://vercel.com/analytics) for anonymous page view counts (no cookies, no personal data). All drawing, saving, and exporting happens 100% locally — no art data ever leaves your browser.
+
 Built for pixel artists, indie game developers, and anyone who wants a fast, focused tool without the bloat.
 
 ## Features
