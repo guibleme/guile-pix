@@ -54,7 +54,7 @@ Go to **[dogsprite.org](https://dogsprite.org)** — no install needed.
 ### Run locally
 
 ```bash
-git clone https://github.com/Seto92/DogSprite.git
+git clone https://github.com/systemcrash92/DogSprite.git
 cd DogSprite
 npm install
 npm run dev

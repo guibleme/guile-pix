@@ -120,7 +120,7 @@ export function exportSpritesheet(
   const scale = Math.max(1, Math.round(options.scale ?? 1));
   const filename = options.filename ?? 'spritesheet.png';
   const dataFilename = options.dataFilename ?? filename.replace(/\.png$/i, '.json');
-  const appName = options.appName ?? 'https://github.com/Seto92/DogSprite';
+  const appName = options.appName ?? 'https://github.com/systemcrash92/DogSprite';
   const asepriteDataFormat = options.asepriteDataFormat ?? null;
   const rows = Math.ceil(frames.length / columns);
   const canvas = document.createElement('canvas');
