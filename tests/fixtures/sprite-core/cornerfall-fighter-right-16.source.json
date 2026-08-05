@@ -1,0 +1,9 @@
+{
+  "artifactId": "cornerfall-fighter-right-16",
+  "approvedPngSha256": "1b465fc4de87da68ce0158d8de21062ac1b7da26dc3b9806fa2f5766a1a0aa8c",
+  "paletteId": "db16",
+  "width": 16,
+  "height": 16,
+  "facing": "right",
+  "renderProcedure": "Rasterize the checked-in SVG at exactly 16x16 RGBA with a transparent background and no resampling. Canonical core tests use the frozen pixel rows in fixtures.ts."
+}

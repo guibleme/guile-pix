@@ -5,6 +5,7 @@ import { useTimelineStore } from '@/stores/useTimelineStore';
 import { useLayerStore } from '@/stores/useLayerStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { PixelBuffer } from '@/lib/canvas/PixelBuffer';
+import { advanceLoopingFrames } from '@/lib/animation/playbackTiming';
 import PixelIcon from '@/components/ui/PixelIcon';
 import useI18n from '@/hooks/useI18n';
 
@@ -13,7 +14,8 @@ export default function FloatingPreview() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number | undefined>(undefined);
   const frameIndexRef = useRef(0);
-  const lastFrameTimeRef = useRef(0);
+  const lastFrameTimeRef = useRef<number | null>(null);
+  const accumulatedTimeRef = useRef(0);
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
   const [isPlaying, setIsPlaying] = React.useState<boolean>(true);
   const [displayFrameIndex, setDisplayFrameIndex] = React.useState(0);
@@ -74,29 +76,43 @@ export default function FloatingPreview() {
   }, [frames, layers, project]);
   
   useEffect(() => {
-    if (!isOpen || !isPlaying) return;
+    if (!isOpen || !isPlaying || frames.length === 0) return;
     
     const animate = (timestamp: number) => {
-      const frameDuration = 1000 / fps;
-      
-      if (timestamp - lastFrameTimeRef.current >= frameDuration) {
-        frameIndexRef.current = (frameIndexRef.current + 1) % frames.length;
-        drawFrame(frameIndexRef.current);
-        setDisplayFrameIndex(frameIndexRef.current);
+      if (lastFrameTimeRef.current === null) {
         lastFrameTimeRef.current = timestamp;
+      } else {
+        accumulatedTimeRef.current += Math.max(0, timestamp - lastFrameTimeRef.current);
+        lastFrameTimeRef.current = timestamp;
+
+        const advance = advanceLoopingFrames(
+          frames,
+          frameIndexRef.current,
+          accumulatedTimeRef.current,
+          fps,
+        );
+        frameIndexRef.current = advance.frameIndex;
+        accumulatedTimeRef.current = advance.remainderMs;
+
+        if (advance.advancedFrames > 0) {
+          drawFrame(frameIndexRef.current);
+          setDisplayFrameIndex(frameIndexRef.current);
+        }
       }
-      
+
       rafRef.current = requestAnimationFrame(animate);
     };
-    
+
     rafRef.current = requestAnimationFrame(animate);
-    
+
     return () => {
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
+      lastFrameTimeRef.current = null;
+      accumulatedTimeRef.current = 0;
     };
-  }, [isOpen, isPlaying, fps, frames.length, drawFrame]);
+  }, [isOpen, isPlaying, fps, frames, drawFrame]);
   
   // Update when frames change
   useEffect(() => {

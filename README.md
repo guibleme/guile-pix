@@ -90,23 +90,28 @@ src/
 ├── types/            # TypeScript interfaces
 └── constants/        # Configuration constants
 
-mcp-server/           # MCP pixel art server (template generation pipeline)
+packages/sprite-core/ # Shared v2 document, compositing, hashing, generation, and bundle logic
+mcp-server/           # Revisioned MCP sprite-animation bridge
 .claude/              # Claude Code agent architecture (agents, skills, rules)
 ```
 
-## MCP Pixel Art Server
+## MCP Sprite Animation Bridge
 
-DogSprite includes a built-in **MCP (Model Context Protocol) server** — an AI-powered pixel art toolkit with **3,900+ hand-crafted sprite templates** and **46 drawing tools**.
+DogSprite includes a local **MCP (Model Context Protocol) server** for deterministic, revisioned sprite-animation work. The current lean surface exposes 15 tools backed by the same v2 document, compositing, hashing, validation, and export rules.
+
+It runs over local Node/stdin with no account, API key, cloud model, or art upload.
 
 ### What is MCP?
 
-[MCP](https://modelcontextprotocol.io) is an open protocol that lets AI assistants (like Claude, Cursor, Windsurf, etc.) use external tools. DogSprite's MCP server gives any MCP-compatible AI the ability to:
+[MCP](https://modelcontextprotocol.io) lets compatible agents call local tools. This server can:
 
-- **Draw pixel art** — create sprites, set pixels, draw lines/rects/ellipses, fill areas
-- **Use 3,900+ templates** — pre-made sprites in DB16 palette (characters, items, UI, environments, effects, vehicles, and more)
-- **Layer management** — add/merge/reorder layers, set opacity
-- **Auto-shading** — material-aware shadows and highlights
-- **Export** — PNG output of finished sprites
+- edit real frames and cels with stale-safe `expectedRevision` mutations;
+- create, duplicate, select, time, validate, and undo animation frames;
+- return numbered baseline/current/diff contact sheets as structured data and PNG content;
+- load v1 projects, save canonical v2 projects, and export deterministic PNG/JSON bundles;
+- generate one source-locked four-frame `walk_right` clip for the approved Cornerfall fixture.
+
+Structural readiness is automated. Artistic approval remains human-owned.
 
 ### Quick Start
 
@@ -121,63 +126,29 @@ DogSprite includes a built-in **MCP (Model Context Protocol) server** — an AI-
    ```json
    {
      "mcpServers": {
-       "dogsprite-pixel-art": {
+      "guile-pix-animation": {
          "command": "node",
-         "args": ["mcp-server/dist/index.js"]
+        "args": ["/absolute/path/to/guile-pix/mcp-server/dist/index.js"]
        }
      }
    }
    ```
 
-3. **Ask your AI to draw** — example prompts:
-   - "Draw a fire sword template" → renders `fire_sword_16` instantly
-   - "List all food templates" → shows 140+ food/consumable sprites
-   - "Create a 16x16 health potion with custom colors"
-   - "Create a 32x32 dungeon torch with shading"
+3. **Use the revisioned workflow:** load or create a project, mutate with the returned revision, validate, request review, then save or export.
 
-### Template Categories
-
-| Category | Count | Size |
-|----------|-------|------|
-| Characters & NPCs | 100+ | 16x16 |
-| Food & Consumables | 140+ | 16x16 |
-| Buildings & Structures | 100+ | 16x16 |
-| UI Elements | 100+ | 16x16 |
-| Effects & Particles | 100+ | 16x16 |
-| Vehicles & Transport | 100+ | 16x16 |
-| Modern & Retro Tech | 200+ | 16x16 |
-| Dungeon Creatures | 100+ | 32x32 |
-| RPG UI Kit | 100+ | 32x32 |
-| ...and 25+ more categories | | |
-
-All templates use the **DB16 palette** (16 colors) with professional colored selout outlines and material-aware shading.
-
-### MCP Tools (46 commands)
-
-The server exposes 46 tools grouped by category:
+### MCP Tools (15 commands)
 
 | Group | Tools | What they do |
 |-------|-------|-------------|
-| **Canvas** | `create_sprite`, `resize_sprite`, `crop_to_content` | Create and manage sprites |
-| **Drawing** | `set_pixels`, `draw_line`, `draw_rect`, `draw_ellipse`, `fill_area`, `draw_smooth_shape` | Place pixels and shapes |
-| **Layers** | `add_layer`, `set_active_layer`, `merge_layers`, `clear_layer` | Layer management |
-| **Colors** | `set_palette`, `replace_color`, `color_swap`, `color_ramp`, `hsb_adjust`, `invert_colors` | Color operations |
-| **Transform** | `mirror_horizontal`, `mirror_vertical`, `flip_layer`, `rotate_layer`, `shift_pixels`, `copy_region` | Transform pixels |
-| **Effects** | `auto_shade`, `auto_highlight`, `outline_layer`, `drop_shadow`, `dither`, `anti_alias`, `gradient_fill` | Shading and effects |
-| **Templates** | `draw_template`, `list_templates` | Browse and render 3,900+ templates |
-| **Export** | `export_png`, `get_preview`, `get_canvas_state`, `analyze_sprite` | Preview and export |
-| **Quality** | `validate_sprite_quality`, `get_drawing_guide`, `palette_extract`, `palette_reduce` | Quality checks |
+| **Project** | `create_sprite`, `load_project`, `save_project` | Start, migrate, and persist canonical v2 projects |
+| **Pixels** | `set_pixels`, `clear_layer`, `set_active_layer` | Edit a targeted real cel or selection |
+| **Frames** | `create_frame`, `duplicate_frame`, `select_frame`, `set_frame_duration` | Manage the single ordered clip |
+| **History** | `undo` | Restore the latest mutation while advancing revision |
+| **Review** | `validate_animation`, `get_animation_review` | Validate and inspect structured visual changes |
+| **Runtime** | `export_animation_bundle` | Write the fixed deterministic atlas/manifest bundle |
+| **Generation** | `generate_walk_right` | Run the approved source-locked semantic recipe |
 
-### Creating Your Own Templates
-
-The template generator converts ASCII grids or DSL draw commands into TypeScript template files:
-
-```bash
-cd mcp-server
-npx tsx scripts/templateGenerator.ts scripts/batches/my_batch.ts 2>/dev/null > src/templates/myTemplates.ts
-```
-
-See `memory/template-quality-guide.md` for the full quality guide and `.claude/README.md` for the AI agent architecture.
+Legacy drawing primitives, transforms, template rendering, layer CRUD, and arbitrary animation generation are intentionally not registered until they use the same revision-safe document transaction.
 
 ## Contributing
 

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "recipeId": "cornerfall-fighter-right-16/walk-right-regions-v1",
+  "sourceArtifactId": "cornerfall-fighter-right-16",
+  "sourcePixelSha256": "7ca4f48ddf57c8efbf48e9fc40bbac41ebd1802d5c4104715d5082c099fdd3ee",
+  "regionLegend": {
+    "B": "body",
+    "A": "rear_arm",
+    "C": "front_arm",
+    "R": "rear_leg",
+    "F": "front_leg"
+  },
+  "regionRows": [
+    "................",
+    "......BBBB......",
+    ".......BBBB.....",
+    "......BBBBB.....",
+    "......BBBBBB....",
+    "......BBBBBBBB..",
+    "......BBBBBBBB..",
+    "....AABBBBBB....",
+    "...AAABBBBBCC...",
+    "...AABBBBBBCCC..",
+    "...AABBBBBBCCC..",
+    "...AABBBBBBB....",
+    "....BBBRRBFF....",
+    "......RRR.FF....",
+    ".....RRRRFFF....",
+    ".....RRR.FFFF..."
+  ],
+  "painterOrder": ["rear_arm", "rear_leg", "body", "front_leg", "front_arm"],
+  "poses": [
+    {
+      "id": "contact_a",
+      "transforms": {
+        "rear_arm": { "dx": 0, "dy": 0 },
+        "rear_leg": { "dx": 0, "dy": 0 },
+        "body": { "dx": 0, "dy": 0 },
+        "front_leg": { "dx": 0, "dy": 0 },
+        "front_arm": { "dx": 0, "dy": 0 }
+      }
+    },
+    {
+      "id": "passing_a",
+      "transforms": {
+        "rear_arm": { "dx": 1, "dy": -1 },
+        "rear_leg": { "dx": 1, "dy": 0 },
+        "body": { "dx": 0, "dy": -1 },
+        "front_leg": { "dx": -1, "dy": 0 },
+        "front_arm": { "dx": -1, "dy": -1 }
+      }
+    },
+    {
+      "id": "contact_b",
+      "transforms": {
+        "rear_arm": { "dx": 1, "dy": 0 },
+        "rear_leg": { "dx": 3, "dy": 0 },
+        "body": { "dx": 0, "dy": 0 },
+        "front_leg": { "dx": -3, "dy": 0 },
+        "front_arm": { "dx": -1, "dy": 0 }
+      }
+    },
+    {
+      "id": "passing_b",
+      "transforms": {
+        "rear_arm": { "dx": -1, "dy": -1 },
+        "rear_leg": { "dx": 2, "dy": 0 },
+        "body": { "dx": 0, "dy": -1 },
+        "front_leg": { "dx": -2, "dy": 0 },
+        "front_arm": { "dx": 1, "dy": -1 }
+      }
+    }
+  ]
+}
