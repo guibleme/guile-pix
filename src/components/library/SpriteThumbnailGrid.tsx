@@ -20,31 +20,29 @@ interface SpriteThumbnailGridProps {
 }
 
 export default function SpriteThumbnailGrid({ categorySlug, templates, selectedId, onSelect }: SpriteThumbnailGridProps) {
-  const [atlasLayout, setAtlasLayout] = useState<AtlasEntry[]>([]);
-  const [atlasLoaded, setAtlasLoaded] = useState(false);
-  const imgRef = useRef<HTMLImageElement | null>(null);
+  const [atlasLayoutState, setAtlasLayoutState] = useState<{ slug: string; entries: AtlasEntry[] }>({ slug: '', entries: [] });
+  const [atlasImageState, setAtlasImageState] = useState<{ slug: string; image: HTMLImageElement } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setAtlasLoaded(false);
-    setAtlasLayout([]);
-
     // Load atlas layout
     fetch(getAtlasLayoutUrl(categorySlug))
       .then(r => r.json())
-      .then((layout: AtlasEntry[]) => setAtlasLayout(layout))
+      .then((entries: AtlasEntry[]) => setAtlasLayoutState({ slug: categorySlug, entries }))
       .catch(() => {});
 
     // Preload atlas image
     const img = new Image();
     img.src = getAtlasUrl(categorySlug);
     img.onload = () => {
-      imgRef.current = img;
-      setAtlasLoaded(true);
+      setAtlasImageState({ slug: categorySlug, image: img });
     };
   }, [categorySlug]);
 
-  if (!atlasLoaded || atlasLayout.length === 0) {
+  const atlasLayout = atlasLayoutState.slug === categorySlug ? atlasLayoutState.entries : [];
+  const atlasImage = atlasImageState?.slug === categorySlug ? atlasImageState.image : null;
+
+  if (!atlasImage || atlasLayout.length === 0) {
     // Loading skeleton
     return (
       <div className="grid grid-cols-5 gap-1 p-1">
@@ -76,9 +74,9 @@ export default function SpriteThumbnailGrid({ categorySlug, templates, selectedI
               background: 'repeating-conic-gradient(#2a2a3e 0% 25%, #232336 0% 50%) 50% / 8px 8px',
             }}
           >
-            {entry && imgRef.current && (
+            {entry && atlasImage && (
               <AtlasThumbnail
-                img={imgRef.current}
+                img={atlasImage}
                 sx={entry.x}
                 sy={entry.y}
                 sw={entry.w}

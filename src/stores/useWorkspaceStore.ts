@@ -14,6 +14,7 @@ import { useCanvasStore } from '@/stores/useCanvasStore';
 import { useAIStore } from '@/stores/useAIStore';
 import { loadWorkspaceSession } from '@/lib/project/workspaceSessionStorage';
 import { appendCopySuffix } from '@/lib/i18nRuntime';
+import type { SpriteDocumentV2 } from '@guile-pix/sprite-core';
 
 const MAX_CLOSED_DOCUMENTS = 12;
 
@@ -28,6 +29,7 @@ interface WorkspaceDocumentData {
   redoStack: HistoryEntry[];
   baselineSignature: string;
   isDirty: boolean;
+  sourceDocumentV2?: SpriteDocumentV2;
 }
 
 export interface WorkspaceDocument extends WorkspaceDocumentData {
@@ -41,6 +43,7 @@ interface CreateWorkspaceDocumentInput {
   frames: Frame[];
   fps: number;
   activeFrameIndex?: number;
+  sourceDocumentV2?: SpriteDocumentV2;
 }
 
 interface WorkspaceState {
@@ -57,6 +60,7 @@ interface WorkspaceState {
   duplicateDocument: (id: string, options?: { setActive?: boolean }) => string | null;
   createDocument: (input: CreateWorkspaceDocumentInput, options?: { setActive?: boolean }) => string;
   openProjectFileAsDocument: (file: unknown, options?: { setActive?: boolean }) => string;
+  setActiveSourceDocumentV2: (document: SpriteDocumentV2) => void;
 }
 
 function pushClosedDocuments(
@@ -96,12 +100,13 @@ function cloneHistoryEntries(entries: HistoryEntry[]): HistoryEntry[] {
 }
 
 function cloneFrames(frames: Frame[]): Frame[] {
+  const arrays = new Map<Uint8ClampedArray, Uint8ClampedArray>();
   return frames.map((frame, index) => ({
     id: frame.id,
     index,
     duration: frame.duration,
     layerData: Object.fromEntries(
-      Object.entries(frame.layerData).map(([layerId, data]) => [layerId, new Uint8ClampedArray(data)])
+      Object.entries(frame.layerData).map(([layerId, data]) => [layerId, arrays.get(data) ?? (() => { const clone = new Uint8ClampedArray(data); arrays.set(data, clone); return clone; })()])
     ),
   }));
 }
@@ -124,7 +129,7 @@ function getSignatureFromData(data: {
   return JSON.stringify(file);
 }
 
-function captureCurrentDocumentData(): WorkspaceDocumentData {
+function captureCurrentDocumentData(sourceDocumentV2?: SpriteDocumentV2): WorkspaceDocumentData {
   const project = useProjectStore.getState().project;
   const { layers, activeLayerId } = useLayerStore.getState();
   const { frames, activeFrameIndex, fps } = useTimelineStore.getState();
@@ -150,6 +155,7 @@ function captureCurrentDocumentData(): WorkspaceDocumentData {
     redoStack: cloneHistoryEntries(redoStack),
     baselineSignature,
     isDirty: persistence.isDirty,
+    sourceDocumentV2: sourceDocumentV2 ? structuredClone(sourceDocumentV2) : undefined,
   };
 }
 
@@ -205,6 +211,7 @@ function createDocumentDataFromInput(input: CreateWorkspaceDocumentInput): Works
     redoStack: [],
     baselineSignature,
     isDirty: false,
+    sourceDocumentV2: input.sourceDocumentV2 ? structuredClone(input.sourceDocumentV2) : undefined,
   };
 }
 
@@ -227,6 +234,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
           frames: entry.frames,
           fps: entry.fps,
           activeFrameIndex: entry.activeFrameIndex,
+          sourceDocumentV2: entry.sourceDocumentV2,
         });
 
         return {
@@ -264,7 +272,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   syncActiveDocumentFromStores: () => {
     const { activeDocumentId, documents } = get();
     if (!activeDocumentId || documents.length === 0) return;
-    const snapshot = captureCurrentDocumentData();
+    const source = documents.find((doc) => doc.id === activeDocumentId)?.sourceDocumentV2;
+    const snapshot = captureCurrentDocumentData(source);
     set({
       documents: documents.map((doc) =>
         doc.id === activeDocumentId
@@ -281,7 +290,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     const target = state.documents.find((doc) => doc.id === id);
     if (!target) return false;
 
-    const snapshot = state.activeDocumentId ? captureCurrentDocumentData() : null;
+    const snapshot = state.activeDocumentId ? captureCurrentDocumentData(state.documents.find((doc) => doc.id === state.activeDocumentId)?.sourceDocumentV2) : null;
     const nextDocuments = state.documents.map((doc) => {
       if (doc.id !== state.activeDocumentId || !snapshot) return doc;
       return { id: doc.id, ...snapshot };
@@ -311,7 +320,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       return true;
     }
 
-    const snapshot = captureCurrentDocumentData();
+    const snapshot = captureCurrentDocumentData(state.documents.find((doc) => doc.id === id)?.sourceDocumentV2);
     const currentIndex = state.documents.findIndex((doc) => doc.id === id);
     if (currentIndex === -1) return false;
 
@@ -340,7 +349,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     if (!state.initialized || state.documents.length <= 1) return false;
     if (!state.documents.some((doc) => doc.id === keepId)) return false;
 
-    const snapshot = state.activeDocumentId ? captureCurrentDocumentData() : null;
+    const snapshot = state.activeDocumentId ? captureCurrentDocumentData(state.documents.find((doc) => doc.id === state.activeDocumentId)?.sourceDocumentV2) : null;
     const currentDocuments = state.documents.map((doc) => {
       if (doc.id !== state.activeDocumentId || !snapshot) return doc;
       return { id: doc.id, ...snapshot };
@@ -379,9 +388,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       redoStack: cloneHistoryEntries(closed.redoStack),
       baselineSignature: closed.baselineSignature,
       isDirty: closed.isDirty,
+      sourceDocumentV2: closed.sourceDocumentV2 ? structuredClone(closed.sourceDocumentV2) : undefined,
     };
 
-    const snapshot = state.activeDocumentId ? captureCurrentDocumentData() : null;
+    const snapshot = state.activeDocumentId ? captureCurrentDocumentData(state.documents.find((doc) => doc.id === state.activeDocumentId)?.sourceDocumentV2) : null;
     const nextDocuments = state.documents.map((doc) => {
       if (doc.id !== state.activeDocumentId || !snapshot) return doc;
       return { id: doc.id, ...snapshot };
@@ -405,7 +415,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     const state = get();
     if (!state.initialized) return null;
 
-    const snapshot = state.activeDocumentId ? captureCurrentDocumentData() : null;
+    const snapshot = state.activeDocumentId ? captureCurrentDocumentData(state.documents.find((doc) => doc.id === state.activeDocumentId)?.sourceDocumentV2) : null;
     const currentDocuments = state.documents.map((doc) => {
       if (doc.id !== state.activeDocumentId || !snapshot) return doc;
       return { id: doc.id, ...snapshot };
@@ -428,6 +438,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       frames: cloneFrames(source.frames),
       fps: source.fps,
       activeFrameIndex: source.activeFrameIndex,
+      sourceDocumentV2: source.sourceDocumentV2 ? structuredClone(source.sourceDocumentV2) : undefined,
     }, { setActive: options?.setActive ?? true });
   },
 
@@ -438,7 +449,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     const id = nanoid();
     const created: WorkspaceDocument = { id, ...data };
 
-    const snapshot = state.activeDocumentId ? captureCurrentDocumentData() : null;
+    const snapshot = state.activeDocumentId ? captureCurrentDocumentData(state.documents.find((doc) => doc.id === state.activeDocumentId)?.sourceDocumentV2) : null;
     const nextDocuments = state.documents.map((doc) => {
       if (doc.id !== state.activeDocumentId || !snapshot) return doc;
       return { id: doc.id, ...snapshot };
@@ -467,6 +478,13 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       frames: parsed.frames,
       fps: parsed.fps,
       activeFrameIndex: parsed.activeFrameIndex,
+      sourceDocumentV2: parsed.sourceDocumentV2,
     }, options);
+  },
+
+  setActiveSourceDocumentV2: (document) => {
+    const state = get();
+    if (!state.activeDocumentId) return;
+    set({ documents: state.documents.map((entry) => entry.id === state.activeDocumentId ? { ...entry, sourceDocumentV2: structuredClone(document) } : entry) });
   },
 }));

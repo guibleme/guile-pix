@@ -34,6 +34,8 @@ interface ContactSheetLayout {
   gap: number;
   width: number;
   height: number;
+  columns: number;
+  rows: number;
 }
 
 const FONT: Record<string, string[]> = {
@@ -68,6 +70,7 @@ function contactSheetLayout(
   baseline: SpriteDocumentV2,
   current: SpriteDocumentV2,
   scale: number,
+  requestedColumns?: number,
 ): ContactSheetLayout {
   if (!Number.isSafeInteger(scale) || scale < 1) throw new Error('Contact-sheet scale must be a positive safe integer');
   const ids = frameOrder(baseline, current);
@@ -82,8 +85,12 @@ function contactSheetLayout(
   const spriteHeight = current.project.height * scale;
   const cellWidth = Math.max(spriteWidth, labelWidth);
   const gap = Math.max(1, scale);
-  const width = ids.length * cellWidth + Math.max(0, ids.length - 1) * gap;
-  const height = headerHeight + spriteHeight;
+  const columns = requestedColumns === undefined ? ids.length : Math.min(ids.length, requestedColumns);
+  if (!Number.isSafeInteger(columns) || columns < 1) throw new Error('Contact-sheet columns must be a positive safe integer');
+  const rows = Math.ceil(ids.length / columns);
+  const cellHeight = headerHeight + spriteHeight;
+  const width = columns * cellWidth + Math.max(0, columns - 1) * gap;
+  const height = rows * cellHeight + Math.max(0, rows - 1) * gap;
   const pixels = width * height;
   const rgbaBytes = pixels * 4;
   if (
@@ -101,7 +108,7 @@ function contactSheetLayout(
   if (rgbaBytes > MAX_CONTACT_SHEET_RGBA_BYTES) {
     throw new Error(`Contact sheet requires ${rgbaBytes} RGBA bytes; limit is ${MAX_CONTACT_SHEET_RGBA_BYTES}`);
   }
-  return { ids, labels, fontScale, headerHeight, spriteWidth, spriteHeight, cellWidth, gap, width, height };
+  return { ids, labels, fontScale, headerHeight, spriteWidth, spriteHeight, cellWidth, gap, width, height, columns, rows };
 }
 
 export function assertContactSheetSize(
@@ -109,8 +116,14 @@ export function assertContactSheetSize(
   baseline: SpriteDocumentV2,
   current: SpriteDocumentV2,
   scale: number,
+  columns?: number,
 ): void {
-  contactSheetLayout(kind, baseline, current, scale);
+  contactSheetLayout(kind, baseline, current, scale, columns);
+}
+
+export function getContactSheetDimensions(kind: SheetKind, baseline: SpriteDocumentV2, current: SpriteDocumentV2, scale: number, columns?: number) {
+  const layout = contactSheetLayout(kind, baseline, current, scale, columns);
+  return { columns: layout.columns, rows: layout.rows, width: layout.width, height: layout.height };
 }
 
 function framePixels(document: SpriteDocumentV2, frameId: string): Uint8ClampedArray | null {
@@ -292,8 +305,9 @@ export function renderContactSheet(
   current: SpriteDocumentV2,
   scale: number,
   changes: FrameChange[],
+  columns?: number,
 ): Buffer {
-  const layout = contactSheetLayout(kind, baseline, current, scale);
+  const layout = contactSheetLayout(kind, baseline, current, scale, columns);
   const { ids, labels, fontScale, headerHeight, spriteWidth, cellWidth, gap } = layout;
   const png = new PNG({
     width: layout.width,
@@ -314,14 +328,17 @@ export function renderContactSheet(
     const duration = kind === 'baseline'
       ? baselineFrame?.durationMs
       : currentFrame?.durationMs;
-    const originX = index * (cellWidth + gap);
+    const column = index % layout.columns;
+    const row = Math.floor(index / layout.columns);
+    const originX = column * (cellWidth + gap);
+    const originY = row * (headerHeight + layout.spriteHeight + gap);
     const spriteX = originX + Math.floor((cellWidth - spriteWidth) / 2);
-    drawText(png, labels[index] ?? `${String(index + 1).padStart(2, '0')}:${duration ?? 0}`, originX, 0, fontScale);
+    drawText(png, labels[index] ?? `${String(index + 1).padStart(2, '0')}:${duration ?? 0}`, originX, originY, fontScale);
     drawScaledPixels(
       png,
       pixels,
       spriteX,
-      headerHeight,
+      originY + headerHeight,
       current.project.width,
       current.project.height,
       scale,
@@ -329,7 +346,7 @@ export function renderContactSheet(
     drawOverlay(
       png,
       spriteX,
-      headerHeight,
+      originY + headerHeight,
       current,
       scale,
       kind === 'diff' ? changes[index]?.changedBounds ?? null : null,

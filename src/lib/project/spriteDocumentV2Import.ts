@@ -42,27 +42,7 @@ export function importSpriteDocumentV2(
     };
   }
 
-  const referencedCels = new Map<string, string>();
-  for (let frameIndex = 0; frameIndex < document.frames.length; frameIndex += 1) {
-    const frame = document.frames[frameIndex];
-    for (const layer of document.layers) {
-      const celId = frame.celRefs[layer.id];
-      const path = `$.frames[${frameIndex}].celRefs.${layer.id}`;
-      const firstPath = referencedCels.get(celId);
-      if (firstPath) {
-        return {
-          ok: false,
-          code: 'UNSUPPORTED_LINKED_CELS',
-          message: `Linked cel ${celId} is shared by ${firstPath} and ${path}; unlink it before opening in the editor`,
-        };
-      }
-      referencedCels.set(celId, path);
-    }
-  }
-
-  if (referencedCels.size !== Object.keys(document.cels).length) {
-    return invalid('Document contains unreferenced cels that the editor cannot preserve');
-  }
+  const editorCelData = new Map<string, number[]>();
 
   return {
     ok: true,
@@ -79,10 +59,11 @@ export function importSpriteDocumentV2(
         duration: frame.durationMs,
         layerData: Object.fromEntries(document.layers.map((layer) => [
           layer.id,
-          Array.from(document.cels[frame.celRefs[layer.id]].data),
+          (() => { const celId = frame.celRefs[layer.id]; const existing = editorCelData.get(celId); if (existing) return existing; const created = Array.from(document.cels[celId].data); editorCelData.set(celId, created); return created; })(),
         ])),
       })),
       fps: deriveFps(document),
+      sourceDocumentV2: document,
     },
   };
 }

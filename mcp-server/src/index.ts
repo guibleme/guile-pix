@@ -4,7 +4,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { createMcpServer } from './server.js';
 
 async function main(): Promise<void> {
-  const server = createMcpServer();
+  const server = createMcpServer({ outputDir: process.env.GUILE_PIX_OUTPUT_DIR });
   await server.connect(new StdioServerTransport());
   console.error('Guile Pix MCP server running on stdio');
 }

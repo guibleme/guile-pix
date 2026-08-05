@@ -3,6 +3,7 @@ import type { ProjectSettings } from '@/types/project';
 import type { Layer, BlendMode } from '@/types/layer';
 import type { Frame } from '@/types/frame';
 import { importSpriteDocumentV2 } from '@/lib/project/spriteDocumentV2Import';
+import { serializeDocumentV2, type SpriteDocumentV2 } from '@guile-pix/sprite-core';
 export interface ProjectFile {
   version: 1;
   project: ProjectSettings;
@@ -17,6 +18,7 @@ export interface ProjectFile {
     layerData: Record<string, number[]>;
   }>;
   fps: number;
+  sourceDocumentV2?: SpriteDocumentV2;
 }
 
 const DEFAULT_FPS = 12;
@@ -663,6 +665,10 @@ export function normalizeProjectFile(raw: unknown): ProjectFile | null {
   if (!isObject(raw) || !Array.isArray(raw.layers) || !Array.isArray(raw.frames)) {
     return null;
   }
+  if (raw.sourceDocumentV2 !== undefined) {
+    const preserved = importSpriteDocumentV2(raw.sourceDocumentV2, PROJECT_FILE_LIMITS.maxProjectPixelBytes);
+    if (preserved.ok) return preserved.value;
+  }
   if (raw.layers.length > PROJECT_FILE_LIMITS.maxLayers) {
     return null;
   }
@@ -797,6 +803,7 @@ export function deserializeProject(file: unknown): {
   fps: number;
   activeFrameIndex: number;
   loop: boolean;
+  sourceDocumentV2?: SpriteDocumentV2;
 } {
   const normalized = normalizeProjectFile(file);
   if (!normalized) {
@@ -807,21 +814,37 @@ export function deserializeProject(file: unknown): {
     project: normalized.project,
     layers: normalized.layers,
     activeLayerId: normalized.activeLayerId,
-    frames: normalized.frames.map((f) => ({
+    frames: (() => {
+      const arrays = new Map<number[], Uint8ClampedArray>();
+      return normalized.frames.map((f) => ({
       id: f.id,
       index: f.index,
       duration: f.duration,
       layerData: Object.fromEntries(
         Object.entries(f.layerData).map(([layerId, data]) => [
           layerId,
-          new Uint8ClampedArray(data),
+          arrays.get(data) ?? (() => { const value = new Uint8ClampedArray(data); arrays.set(data, value); return value; })(),
         ])
       ),
-    })),
+      }));
+    })(),
     fps: normalized.fps,
     activeFrameIndex: Math.max(0, normalized.frames.findIndex((frame) => frame.id === normalized.activeFrameId)),
     loop: normalized.loop ?? true,
+    sourceDocumentV2: normalized.sourceDocumentV2,
   };
+}
+
+export function saveSpriteDocumentV2ToFile(documentV2: SpriteDocumentV2): void {
+  const serialized = serializeDocumentV2(documentV2);
+  if (!serialized.ok) throw new Error(serialized.issues[0]?.message ?? 'Invalid v2 project');
+  const blob = new Blob([serialized.value], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `${documentV2.project.name}${PROJECT_FILE_EXTENSION}`;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }
 
 export function saveProjectToFile(

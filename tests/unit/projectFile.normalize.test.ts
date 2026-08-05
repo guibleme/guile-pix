@@ -140,16 +140,16 @@ describe('normalizeProjectFile limits', () => {
     expect(deserialized.loop).toBe(true);
   });
 
-  it('fails closed when version 2 linked cels cannot be preserved by the editor', () => {
+  it('preserves version 2 linked cels as shared editor pixel references', () => {
     const linked = createBaseV2Document();
     linked.frames[1].celRefs['layer-1'] = 'cel-1';
     delete linked.cels['cel-2'];
 
-    expect(importSpriteDocumentV2(linked, PROJECT_FILE_LIMITS.maxProjectPixelBytes)).toEqual(expect.objectContaining({
-      ok: false,
-      code: 'UNSUPPORTED_LINKED_CELS',
-    }));
-    expect(normalizeProjectFile(linked)).toBeNull();
+    const imported = importSpriteDocumentV2(linked, PROJECT_FILE_LIMITS.maxProjectPixelBytes);
+    expect(imported.ok).toBe(true);
+    const deserialized = deserializeProject(linked);
+    expect(deserialized.frames[0].layerData['layer-1']).toBe(deserialized.frames[1].layerData['layer-1']);
+    expect(deserialized.sourceDocumentV2).toEqual(linked);
   });
 
   it('rejects projects with too many layers', () => {

@@ -273,7 +273,7 @@ export const useDungeonStore = create<DungeonState & DungeonActions>((set, get) 
 
       if (newEnemyHp <= 0) {
         // Enemy killed — streak + rewards
-        let streak = s.streak + 1;
+        const streak = s.streak + 1;
         const streakMul = Math.min(3, 1 + streak * 0.1);
 
         let xpGain = s.enemyDef.xp;
@@ -299,7 +299,8 @@ export const useDungeonStore = create<DungeonState & DungeonActions>((set, get) 
 
         player.addExp(xpGain);
 
-        let { floor, killsOnFloor, totalKills, totalGold, highestFloor, soulPower } = s;
+        const { soulPower } = s;
+        let { floor, killsOnFloor, totalKills, totalGold, highestFloor } = s;
         totalKills += 1;
         totalGold += goldGain;
         killsOnFloor += 1;

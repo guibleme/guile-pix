@@ -2,6 +2,8 @@ import type { ProjectSettings } from '@/types/project';
 import type { Layer } from '@/types/layer';
 import type { Frame } from '@/types/frame';
 import { deserializeProject, serializeProject, type ProjectFile } from '@/lib/export/projectFile';
+import { snapshotEditorDocumentV2 } from '@/lib/project/editorSpriteDocumentAdapter';
+import type { SpriteDocumentV2 } from '@guile-pix/sprite-core';
 
 const WORKSPACE_SESSION_KEY = 'dogsprite-workspace-session-v1';
 const LEGACY_WORKSPACE_SESSION_KEY = 'spritedog-workspace-session-v1';
@@ -17,11 +19,12 @@ export interface WorkspaceSessionDocumentData {
   activeFrameIndex: number;
   baselineSignature: string;
   isDirty: boolean;
+  sourceDocumentV2?: SpriteDocumentV2;
 }
 
 interface WorkspaceSessionRecord {
   id: string;
-  file: ProjectFile;
+  file: ProjectFile | SpriteDocumentV2;
   activeFrameIndex: number;
   baselineSignature: string;
   isDirty: boolean;
@@ -60,13 +63,16 @@ export function saveWorkspaceSession(
   }
 
   const trimmed = documents.slice(-MAX_WORKSPACE_DOCS);
-  const records: WorkspaceSessionRecord[] = trimmed.map((doc) => ({
-    id: doc.id,
-    file: serializeProject(doc.project, doc.layers, doc.activeLayerId, doc.frames, doc.fps),
-    activeFrameIndex: doc.activeFrameIndex,
-    baselineSignature: doc.baselineSignature,
-    isDirty: doc.isDirty,
-  }));
+  const records: WorkspaceSessionRecord[] = trimmed.map((doc) => {
+    const canonical = snapshotEditorDocumentV2({ project: doc.project, layers: doc.layers, activeLayerId: doc.activeLayerId, frames: doc.frames, activeFrameIndex: doc.activeFrameIndex, fps: doc.fps, loop: doc.sourceDocumentV2?.clip.loop !== 'once', sourceDocument: doc.sourceDocumentV2 });
+    return {
+      id: doc.id,
+      file: canonical.ok ? canonical.value : serializeProject(doc.project, doc.layers, doc.activeLayerId, doc.frames, doc.fps),
+      activeFrameIndex: doc.activeFrameIndex,
+      baselineSignature: doc.baselineSignature,
+      isDirty: doc.isDirty,
+    };
+  });
 
   const activeId = records.some((record) => record.id === activeDocumentId)
     ? activeDocumentId
@@ -127,6 +133,7 @@ export function loadWorkspaceSession(): {
             ? record.baselineSignature
             : JSON.stringify(record.file),
           isDirty: Boolean(record.isDirty),
+          sourceDocumentV2: parsed.sourceDocumentV2,
         });
       } catch {
         // Skip invalid records.

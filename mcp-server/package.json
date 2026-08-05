@@ -1,6 +1,6 @@
 {
   "name": "dogsprite-mcp-server",
-  "version": "1.0.0",
+  "version": "5.0.0",
   "description": "MCP server for programmatic pixel art generation in DogSprite",
   "type": "module",
   "main": "dist/index.js",
@@ -8,6 +8,7 @@
     "build": "npm run build:core && tsc",
     "build:core": "npm --prefix ../packages/sprite-core run build",
     "start": "node dist/index.js",
+    "smoke:dist": "node scripts/smokeBuiltServer.mjs",
     "dev": "tsc --watch"
   },
   "dependencies": {

@@ -296,7 +296,7 @@ fs.mkdirSync(dir16, { recursive: true });
 fs.mkdirSync(dir32, { recursive: true });
 
 let totalExported = 0;
-let errors: string[] = [];
+const errors: string[] = [];
 
 interface GalleryEntry {
   category: string;

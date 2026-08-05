@@ -44,9 +44,11 @@ describe('MCP animation protocol', () => {
 
       const listed = await client.listTools();
       const expectedNames = [
-        'clear_layer', 'create_frame', 'create_sprite', 'duplicate_frame', 'export_animation_bundle', 'generate_walk_right', 'get_animation_review',
-        'load_project', 'save_project', 'select_frame', 'set_active_layer', 'set_frame_duration',
-        'set_pixels', 'undo', 'validate_animation',
+        'apply_mask', 'clear_layer', 'create_clip', 'create_frame', 'create_layer', 'create_sprite', 'define_mask', 'delete_clip', 'delete_frame', 'delete_layer',
+        'draw_primitives', 'duplicate_frame', 'duplicate_frame_range', 'export_animation_bundle', 'export_animation_preview', 'generate_walk_right', 'get_animation_review',
+        'get_mask', 'get_palette', 'get_project_snapshot', 'link_cels', 'load_project', 'map_to_palette', 'redo', 'rename_clip', 'reorder_frames', 'reorder_layers', 'replace_color',
+        'save_project', 'select_frame', 'set_active_layer', 'set_clip_metadata', 'set_frame_duration', 'set_pixels', 'set_project_metadata', 'set_project_palette',
+        'transform_region', 'undo', 'unlink_cel', 'update_layer', 'validate_animation',
       ];
       expect(listed.tools.map((tool) => tool.name).sort()).toEqual(expectedNames);
       expect(listed.tools.every((tool) => tool.inputSchema && tool.outputSchema)).toBe(true);
@@ -62,6 +64,14 @@ describe('MCP animation protocol', () => {
       expect(createdText?.type).toBe('text');
       if (createdText?.type === 'text') expect(JSON.parse(createdText.text)).toEqual(createdData);
       const projectId = createdData.projectId as string;
+
+      const malformedPrimitive = await client.callTool({
+        name: 'draw_primitives',
+        arguments: { projectId, expectedRevision: 0, operations: [{ kind: 'line', color: '#ff0000ff' }] },
+      }) as CallToolResult;
+      expect(malformedPrimitive.isError).toBe(true);
+      const unchanged = await client.callTool({ name: 'get_project_snapshot', arguments: { projectId, includePixels: true } }) as CallToolResult;
+      expect((unchanged.structuredContent as Record<string, unknown>).revision).toBe(0);
 
       const changed = await client.callTool({
         name: 'set_pixels',

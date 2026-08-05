@@ -10,6 +10,8 @@ import {
 
 const BLEND_MODES = new Set<BlendMode>(['normal', 'multiply', 'screen', 'overlay']);
 const LOOP_MODES = new Set(['linear', 'ping_pong', 'once']);
+const CLIP_DIRECTIONS = new Set(['forward', 'reverse']);
+const FACINGS = new Set(['left', 'right', 'up', 'down', 'front', 'back', 'none']);
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 const SHA256 = /^[0-9a-f]{64}$/i;
 const MAX_SIDE = 1024;
@@ -161,8 +163,70 @@ export function validateDocumentV2(input: unknown): CoreResult<SpriteDocumentV2>
     issues.push(issue('INVALID_CLIP', '$.clip.frameIds', 'frameIds must be an array'));
   } else {
     const orderedFrameIds = document.frames.map((frame) => frame.id);
-    if (document.clip.frameIds.length !== orderedFrameIds.length || document.clip.frameIds.some((id, index) => id !== orderedFrameIds[index])) {
-      issues.push(issue('INVALID_CLIP', '$.clip.frameIds', 'The single clip must reference every frame in document order'));
+    const isExtended = Array.isArray(document.clips);
+    if (!isExtended && (document.clip.frameIds.length !== orderedFrameIds.length || document.clip.frameIds.some((id, index) => id !== orderedFrameIds[index]))) {
+      issues.push(issue('INVALID_CLIP', '$.clip.frameIds', 'The legacy single clip must reference every frame in document order'));
+    }
+    if (isExtended && (document.clip.frameIds.length < 1 || document.clip.frameIds.some((id) => !frameIds.has(id)) || new Set(document.clip.frameIds).size !== document.clip.frameIds.length)) {
+      issues.push(issue('INVALID_CLIP', '$.clip.frameIds', 'Clip frame IDs must be unique existing frames'));
+    }
+  }
+  if (document.clip.direction !== undefined && !CLIP_DIRECTIONS.has(document.clip.direction)) {
+    issues.push(issue('INVALID_CLIP', '$.clip.direction', 'Unsupported clip direction'));
+  }
+
+  if (document.clips !== undefined) {
+    if (!Array.isArray(document.clips) || document.clips.length < 1) {
+      issues.push(issue('INVALID_CLIP', '$.clips', 'clips must contain at least one clip'));
+    } else {
+      const clipIds = new Set<string>();
+      const clipNames = new Set<string>();
+      document.clips.forEach((clip, index) => {
+        const clipPath = `$.clips[${index}]`;
+        if (!isObject(clip) || typeof clip.id !== 'string' || !clip.id || clipIds.has(clip.id)) {
+          issues.push(issue('INVALID_CLIP', `${clipPath}.id`, 'Clip ID must be unique and non-empty'));
+        } else clipIds.add(clip.id);
+        if (typeof clip.name !== 'string' || !clip.name || clipNames.has(clip.name)) {
+          issues.push(issue('INVALID_CLIP', `${clipPath}.name`, 'Clip name must be unique and non-empty'));
+        } else clipNames.add(clip.name);
+        if (!Array.isArray(clip.frameIds) || clip.frameIds.length < 1 || clip.frameIds.some((id) => !frameIds.has(id)) || new Set(clip.frameIds).size !== clip.frameIds.length) {
+          issues.push(issue('INVALID_CLIP', `${clipPath}.frameIds`, 'Clip frame IDs must be unique existing frames'));
+        }
+        if (!LOOP_MODES.has(clip.loop)) issues.push(issue('INVALID_CLIP', `${clipPath}.loop`, 'Unsupported loop mode'));
+        if (clip.direction !== undefined && !CLIP_DIRECTIONS.has(clip.direction)) issues.push(issue('INVALID_CLIP', `${clipPath}.direction`, 'Unsupported clip direction'));
+      });
+      if (typeof document.activeClipId !== 'string' || !clipIds.has(document.activeClipId)) {
+        issues.push(issue('INVALID_CLIP', '$.activeClipId', 'activeClipId must reference an existing clip'));
+      } else {
+        const active = document.clips.find((clip) => clip.id === document.activeClipId);
+        if (active && canonicalJson(active) !== canonicalJson(document.clip)) {
+          issues.push(issue('INVALID_CLIP', '$.clip', 'clip must mirror the active clip'));
+        }
+      }
+    }
+  } else if (document.activeClipId !== undefined) {
+    issues.push(issue('INVALID_CLIP', '$.activeClipId', 'activeClipId requires clips'));
+  }
+
+  if (document.production !== undefined) {
+    if (!isObject(document.production)) {
+      issues.push(issue('INVALID_PRODUCTION_METADATA', '$.production', 'production must be an object'));
+    } else {
+      const production = document.production;
+      if (production.paletteId !== undefined && (typeof production.paletteId !== 'string' || !production.paletteId)) issues.push(issue('INVALID_PRODUCTION_METADATA', '$.production.paletteId', 'paletteId must be non-empty'));
+      if (production.paletteName !== undefined && (typeof production.paletteName !== 'string' || !production.paletteName)) issues.push(issue('INVALID_PRODUCTION_METADATA', '$.production.paletteName', 'paletteName must be non-empty'));
+      if (production.groundLineY !== undefined && (!isFiniteInteger(production.groundLineY) || production.groundLineY < 0 || production.groundLineY >= project.height)) issues.push(issue('INVALID_PRODUCTION_METADATA', '$.production.groundLineY', 'groundLineY must be inside the canvas'));
+      if (production.facing !== undefined && (typeof production.facing !== 'string' || !FACINGS.has(production.facing))) issues.push(issue('INVALID_PRODUCTION_METADATA', '$.production.facing', 'Unsupported facing'));
+      if (production.rootMotion !== undefined) {
+        if (!isObject(production.rootMotion) || !['none', 'per_frame'].includes(String(production.rootMotion.mode))) {
+          issues.push(issue('INVALID_PRODUCTION_METADATA', '$.production.rootMotion', 'Unsupported root motion'));
+        } else if (production.rootMotion.mode === 'per_frame') {
+          if (!isObject(production.rootMotion.offsetsPx)) issues.push(issue('INVALID_PRODUCTION_METADATA', '$.production.rootMotion.offsetsPx', 'offsetsPx must be an object'));
+          else Object.entries(production.rootMotion.offsetsPx).forEach(([id, offset]) => {
+            if (!frameIds.has(id) || !isObject(offset) || !isFiniteInteger(offset.x) || !isFiniteInteger(offset.y)) issues.push(issue('INVALID_PRODUCTION_METADATA', `$.production.rootMotion.offsetsPx.${id}`, 'Root offsets require an existing frame and integer x/y'));
+          });
+        }
+      }
     }
   }
 

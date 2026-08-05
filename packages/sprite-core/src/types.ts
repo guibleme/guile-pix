@@ -37,6 +37,17 @@ export interface SpriteClipV2 {
   name: string;
   frameIds: string[];
   loop: ClipLoopMode;
+  direction?: 'forward' | 'reverse';
+}
+
+export interface SpriteProductionMetadataV2 {
+  paletteId?: string;
+  paletteName?: string;
+  groundLineY?: number;
+  facing?: 'left' | 'right' | 'up' | 'down' | 'front' | 'back' | 'none';
+  rootMotion?:
+    | { mode: 'none' }
+    | { mode: 'per_frame'; offsetsPx: Record<string, { x: number; y: number }> };
 }
 
 export interface SpriteSourceProvenance {
@@ -53,6 +64,9 @@ export interface SpriteDocumentV2 {
   cels: Record<string, SpriteCelV2>;
   frames: SpriteFrameV2[];
   clip: SpriteClipV2;
+  clips?: SpriteClipV2[];
+  activeClipId?: string;
+  production?: SpriteProductionMetadataV2;
   palette: string[];
   pivotPx: { x: number; y: number };
   activeLayerId: string;

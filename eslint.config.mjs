@@ -5,6 +5,13 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    files: ["mcp-server/scripts/**/*.{js,ts}", "scripts/**/*.ts"],
+    rules: {
+      // Export/build scripts aggregate heterogeneous legacy template registries.
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

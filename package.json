@@ -14,8 +14,9 @@
     "core:build": "tsc -p packages/sprite-core/tsconfig.json",
     "mcp:build": "npm --prefix mcp-server run build",
     "test:mcp": "vitest run tests/unit/mcpAnimationBridge.test.ts tests/unit/mcpProtocol.test.ts",
+    "test:mcp:dist": "npm run mcp:build && npm --prefix mcp-server run smoke:dist",
     "icons:build": "cd mcp-server && npx tsx scripts/exportEditorIcons.ts",
-    "quality": "npm run typecheck && npm run lint && npm run test:unit && npm run core:build && npm run mcp:build && npm run build",
+    "quality": "npm run typecheck && npm run lint && npm run test:unit && npm run core:build && npm run mcp:build && npm --prefix mcp-server run smoke:dist && npm run build",
     "sprites:build": "tsx scripts/buildSpriteLibrary.ts"
   },
   "dependencies": {

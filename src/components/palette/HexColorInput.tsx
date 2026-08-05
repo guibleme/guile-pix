@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import type { RGBA } from '@/types/color';
 import { rgbaToHex, hexToRgba } from '@/lib/utils/color';
 
@@ -10,14 +10,8 @@ interface HexColorInputProps {
 }
 
 export default function HexColorInput({ color, onChange }: HexColorInputProps) {
-  const [text, setText] = useState(rgbaToHex(color));
-  const focusedRef = useRef(false);
-
-  useEffect(() => {
-    if (!focusedRef.current) {
-      setText(rgbaToHex(color));
-    }
-  }, [color]);
+  const [draft, setDraft] = useState<string | null>(null);
+  const text = draft ?? rgbaToHex(color);
 
   const commit = useCallback(
     (raw: string) => {
@@ -27,7 +21,7 @@ export default function HexColorInput({ color, onChange }: HexColorInputProps) {
       const digits = hex.slice(1);
       const padded = digits.padEnd(6, '0').slice(0, 6);
       const final = '#' + padded;
-      setText(final);
+      setDraft(null);
       onChange(hexToRgba(final, color.a));
     },
     [onChange, color.a]
@@ -36,7 +30,7 @@ export default function HexColorInput({ color, onChange }: HexColorInputProps) {
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const v = e.target.value;
-      setText(v);
+      setDraft(v);
       if (/^#[0-9a-fA-F]{6}$/.test(v)) {
         onChange(hexToRgba(v, color.a));
       }
@@ -51,9 +45,8 @@ export default function HexColorInput({ color, onChange }: HexColorInputProps) {
         type="text"
         value={text}
         onChange={handleChange}
-        onFocus={() => { focusedRef.current = true; }}
+        onFocus={() => { setDraft(rgbaToHex(color)); }}
         onBlur={(e) => {
-          focusedRef.current = false;
           commit(e.target.value);
         }}
         className="flex-1 h-[22px] px-1.5 text-[11px] bg-background border border-border rounded text-foreground font-mono"

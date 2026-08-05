@@ -14,23 +14,26 @@ export default function ColorSelector() {
   const setForeground = usePaletteStore((s) => s.setForeground);
 
   const [mode, setMode] = useState<ColorMode>('HSB');
-  const hsbRef = useRef<HSB>(rgbaToHsb(foreground));
+  const [displayHsb, setDisplayHsb] = useState<HSB>(() => rgbaToHsb(foreground));
   const isInternalRef = useRef(false);
 
   // Sync from external store changes (swatch clicks, color picker tool, swap)
   useEffect(() => {
-    if (isInternalRef.current) {
-      isInternalRef.current = false;
-      return;
-    }
-    const newHsb = rgbaToHsb(foreground);
-    // Preserve hue when color is achromatic (S=0 or B=0)
-    if (foreground.r === foreground.g && foreground.g === foreground.b) {
-      hsbRef.current = { ...hsbRef.current, s: newHsb.s, b: newHsb.b };
-    } else {
-      hsbRef.current = newHsb;
-    }
-  }, [foreground]);
+    return usePaletteStore.subscribe((state, previousState) => {
+      if (state.foreground === previousState.foreground) return;
+      if (isInternalRef.current) {
+        isInternalRef.current = false;
+        return;
+      }
+      const newHsb = rgbaToHsb(state.foreground);
+      // Preserve hue when color is achromatic (S=0 or B=0)
+      setDisplayHsb((current) =>
+        state.foreground.r === state.foreground.g && state.foreground.g === state.foreground.b
+          ? { ...current, s: newHsb.s, b: newHsb.b }
+          : newHsb
+      );
+    });
+  }, []);
 
   const commitColor = useCallback(
     (rgba: RGBA) => {
@@ -42,7 +45,7 @@ export default function ColorSelector() {
 
   const handleSpectrumChange = useCallback(
     (hsb: HSB) => {
-      hsbRef.current = hsb;
+      setDisplayHsb(hsb);
       commitColor(hsbToRgba(hsb, foreground.a));
     },
     [commitColor, foreground.a]
@@ -50,7 +53,7 @@ export default function ColorSelector() {
 
   const handleHsbChange = useCallback(
     (hsb: HSB) => {
-      hsbRef.current = hsb;
+      setDisplayHsb(hsb);
       commitColor(hsbToRgba(hsb, foreground.a));
     },
     [commitColor, foreground.a]
@@ -61,9 +64,9 @@ export default function ColorSelector() {
       const newHsb = rgbaToHsb(rgba);
       // Preserve hue for achromatic
       if (rgba.r === rgba.g && rgba.g === rgba.b) {
-        hsbRef.current = { ...hsbRef.current, s: newHsb.s, b: newHsb.b };
+        setDisplayHsb((current) => ({ ...current, s: newHsb.s, b: newHsb.b }));
       } else {
-        hsbRef.current = newHsb;
+        setDisplayHsb(newHsb);
       }
       commitColor(rgba);
     },
@@ -81,21 +84,14 @@ export default function ColorSelector() {
     (rgba: RGBA) => {
       const newHsb = rgbaToHsb(rgba);
       if (rgba.r === rgba.g && rgba.g === rgba.b) {
-        hsbRef.current = { ...hsbRef.current, s: newHsb.s, b: newHsb.b };
+        setDisplayHsb((current) => ({ ...current, s: newHsb.s, b: newHsb.b }));
       } else {
-        hsbRef.current = newHsb;
+        setDisplayHsb(newHsb);
       }
       commitColor(rgba);
     },
     [commitColor]
   );
-
-  // Current display HSB: use ref for hue preservation
-  const displayHsb: HSB = {
-    h: hsbRef.current.h,
-    s: hsbRef.current.s,
-    b: hsbRef.current.b,
-  };
 
   return (
     <div className="space-y-2">

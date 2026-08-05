@@ -3,6 +3,7 @@ import type { ProjectSettings } from '@/types/project';
 import type { Layer } from '@/types/layer';
 import type { Frame } from '@/types/frame';
 import { normalizeProjectFile, serializeProject, type ProjectFile } from '@/lib/export/projectFile';
+import type { SpriteDocumentV2 } from '@guile-pix/sprite-core';
 
 export type RecoveryReason =
   | 'autosave'
@@ -251,10 +252,11 @@ export function saveRecoverySnapshot(
   activeLayerId: string,
   frames: Frame[],
   fps: number,
-  reason: RecoveryReason
+  reason: RecoveryReason,
+  canonicalDocumentV2?: SpriteDocumentV2,
 ): string | null {
   const snapshotId = nanoid(10);
-  const snapshot = serializeProject(project, layers, activeLayerId, frames, fps);
+  const snapshot = canonicalDocumentV2 ?? serializeProject(project, layers, activeLayerId, frames, fps);
   const snapshotRaw = JSON.stringify(snapshot);
   const thumbnailDataUrl = generateThumbnailFromRuntimeData(project, layers, frames) ?? undefined;
   const meta: RecoverySnapshotMeta = {

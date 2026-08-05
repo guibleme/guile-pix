@@ -25,7 +25,7 @@ Add the server to the agent's MCP configuration:
 }
 ```
 
-Restart the agent client and confirm that it lists 15 Guile Pix tools.
+Restart the agent client and confirm that it lists the revisioned Guile Pix authoring tools.
 
 ## Copy-paste operating prompt
 
@@ -49,7 +49,7 @@ Workflow:
    foot stability, weight, and loop continuity.
 5. Pass expectedRevision on every mutation, undo, save, generation, and export.
    If STALE_REVISION occurs, use currentRevision and retry deliberately.
-6. Save the canonical project with save_project to an explicit absolute path.
+6. Save the canonical project with save_project to an explicit absolute path. Existing files are preserved unless overwrite is explicitly true.
 7. Return project path, final revision, validation result, review paths, frame
    timings, and unresolved human-art-review questions. Never call art
    artistically approved without a human decision.
@@ -57,12 +57,10 @@ Workflow:
 Current boundary:
 - New arbitrary sprites and frame animations can be drawn, reviewed, and saved
   as canonical v2 .dogsprite projects.
-- generate_walk_right and export_animation_bundle are ONLY valid for the frozen
-  cornerfall-fighter-right-16 proof contract. Do not call them for a new asset.
-- General PNG/runtime bundle export for new assets is not implemented yet.
-  Report runtime_export_pending instead of claiming engine readiness.
-- No arbitrary prompt generator, template browser, layer CRUD, redo, or GIF
-  exporter is registered.
+- generate_walk_right is only valid for the frozen cornerfall-fighter-right-16 proof contract.
+- export_animation_bundle supports canonical generic assets and the frozen compatibility fixture. Verify hashes/metadata in the target engine and keep artistic approval pending until human review.
+- export_animation_preview supports exact APNG and centisecond-representable GIF. WebP requests fail with structured guidance.
+- No arbitrary prompt generator, template browser, or artistic scorer is registered.
 ```
 
 ## Proven walk-right smoke

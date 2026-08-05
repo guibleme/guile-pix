@@ -1,4 +1,4 @@
-const fs = require('fs');
+import fs from 'node:fs';
 const src = fs.readFileSync('scripts/batches/game_icons_32_batch1.ts', 'utf8');
 const gridRe = /grid:\s*\[([\s\S]*?)\]/g;
 const idRe = /id:\s*'([^']+)'/g;

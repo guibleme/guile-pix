@@ -16,6 +16,24 @@ afterEach(() => {
 });
 
 describe('Godot 4.7 unchanged bundle consumer', () => {
+  it.skipIf(!fs.existsSync(GODOT))('loads and plays a generic manifest-driven bundle through public APIs', async () => {
+    const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'guile-pix-godot-generic-'));
+    temporaryDirectories.push(outputDir);
+    const bridge = new AnimationBridge({ outputDir });
+    const created = await bridge.createSprite({ width: 7, height: 5, name: 'generic-godot', palette: 'gameboy' });
+    const projectId = (created.structuredContent as Record<string, unknown>).projectId as string;
+    await bridge.setProjectMetadata({ projectId, expectedRevision: 0, groundLineY: 4, facing: 'left', rootMotion: { mode: 'none' } });
+    await bridge.setPixels({ projectId, expectedRevision: 1, pixels: [{ x: 1, y: 1, color: '#9bbc0fff' }] });
+    await bridge.createFrame({ projectId, expectedRevision: 2, frameId: 'frame-1', durationMs: 170 });
+    await bridge.setPixels({ projectId, expectedRevision: 3, frameId: 'frame-1', pixels: [{ x: 2, y: 1, color: '#306230ff' }] });
+    const bundlePath = path.join(outputDir, 'generic-bundle');
+    const exported = await bridge.exportAnimationBundle({ projectId, expectedRevision: 4, outputPath: bundlePath });
+    expect(exported.isError).not.toBe(true);
+    const result = spawnSync(GODOT, ['--headless', '--path', path.resolve('tests/runtime/godot-4.7'), '--script', path.resolve('tests/runtime/godot-4.7/verify_generic_bundle.gd'), '--', bundlePath], { encoding: 'utf8' });
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    expect(result.stdout).toContain('GODOT_GENERIC_BUNDLE_OK');
+  }, 20_000);
+
   it.skipIf(!fs.existsSync(GODOT))('loads, validates, builds SpriteFrames, and plays the exported files through public APIs', async () => {
     const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'guile-pix-godot-'));
     temporaryDirectories.push(outputDir);

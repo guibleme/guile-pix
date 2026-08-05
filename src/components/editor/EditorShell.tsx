@@ -177,12 +177,17 @@ function RightLayersLayout() {
 type RightTab = 'layers' | 'library';
 
 function RightDock() {
-  const showLibrary = useUIStore((s) => s.showSpriteLibraryPanel);
-  const [activeTab, setActiveTab] = useState<RightTab>(showLibrary ? 'library' : 'layers');
+  const [activeTab, setActiveTab] = useState<RightTab>(() =>
+    useUIStore.getState().showSpriteLibraryPanel ? 'library' : 'layers'
+  );
 
   useEffect(() => {
-    if (showLibrary) setActiveTab('library');
-  }, [showLibrary]);
+    return useUIStore.subscribe((state, previousState) => {
+      if (state.showSpriteLibraryPanel && !previousState.showSpriteLibraryPanel) {
+        setActiveTab('library');
+      }
+    });
+  }, []);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

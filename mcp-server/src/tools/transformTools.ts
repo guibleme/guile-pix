@@ -621,7 +621,7 @@ export function handlePaletteExtract(args: PaletteExtractArgs) {
     }
   }
 
-  let entries = [...colorCounts.entries()];
+  const entries = [...colorCounts.entries()];
   const sortBy = args.sortBy ?? 'frequency';
 
   switch (sortBy) {

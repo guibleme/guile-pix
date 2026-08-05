@@ -97,7 +97,7 @@ mcp-server/           # Revisioned MCP sprite-animation bridge
 
 ## MCP Sprite Animation Bridge
 
-DogSprite includes a local **MCP (Model Context Protocol) server** for deterministic, revisioned sprite-animation work. The current lean surface exposes 15 tools backed by the same v2 document, compositing, hashing, validation, and export rules.
+DogSprite includes a local **MCP (Model Context Protocol) server** for deterministic, revisioned sprite-animation work. Its tools share the same canonical v2 document, compositing, hashing, validation, and export rules.
 
 It runs over local Node/stdin with no account, API key, cloud model, or art upload.
 
@@ -106,7 +106,7 @@ It runs over local Node/stdin with no account, API key, cloud model, or art uplo
 [MCP](https://modelcontextprotocol.io) lets compatible agents call local tools. This server can:
 
 - edit real frames and cels with stale-safe `expectedRevision` mutations;
-- create, duplicate, select, time, validate, and undo animation frames;
+- create, reorder, duplicate, select, time, validate, undo, and redo animation frames;
 - return numbered baseline/current/diff contact sheets as structured data and PNG content;
 - load v1 projects, save canonical v2 projects, and export deterministic PNG/JSON bundles;
 - generate one source-locked four-frame `walk_right` clip for the approved Cornerfall fixture.
@@ -136,19 +136,19 @@ Structural readiness is automated. Artistic approval remains human-owned.
 
 3. **Use the revisioned workflow:** load or create a project, mutate with the returned revision, validate, request review, then save or export.
 
-### MCP Tools (15 commands)
+### MCP Tools
 
 | Group | Tools | What they do |
 |-------|-------|-------------|
-| **Project** | `create_sprite`, `load_project`, `save_project` | Start, migrate, and persist canonical v2 projects |
-| **Pixels** | `set_pixels`, `clear_layer`, `set_active_layer` | Edit a targeted real cel or selection |
-| **Frames** | `create_frame`, `duplicate_frame`, `select_frame`, `set_frame_duration` | Manage the single ordered clip |
-| **History** | `undo` | Restore the latest mutation while advancing revision |
-| **Review** | `validate_animation`, `get_animation_review` | Validate and inspect structured visual changes |
-| **Runtime** | `export_animation_bundle` | Write the fixed deterministic atlas/manifest bundle |
+| **Project** | `create_sprite`, `load_project`, `save_project`, `get_project_snapshot`, `set_project_metadata` | Inspect and persist canonical v2 projects and production metadata |
+| **Pixels** | `set_pixels`, `clear_layer`, `draw_primitives`, `transform_region`, mask and palette tools | Deterministic revision-safe authoring; `#00000000` erases |
+| **Frames** | frame, clip, layer, and linked-cel operations | Manage ordered animation structure without repainting |
+| **History** | `undo`, `redo` | Traverse bounded labeled history while revisions remain monotonic |
+| **Review** | `validate_animation`, `get_animation_review`, `export_animation_preview` | Return declared raw diagnostics, compact grids, exact APNG, or centisecond-exact GIF; WebP fails explicitly |
+| **Runtime** | `export_animation_bundle` | Write generic deterministic atlas/manifest bundles with hashes and Godot hints |
 | **Generation** | `generate_walk_right` | Run the approved source-locked semantic recipe |
 
-Legacy drawing primitives, transforms, template rendering, layer CRUD, and arbitrary animation generation are intentionally not registered until they use the same revision-safe document transaction.
+Named masks are session-scoped, output stays under the configured server root, and artistic/runtime approval remains human-owned. Template rendering and artistic scoring are intentionally not part of the revisioned animation bridge.
 
 For a copy-paste production-agent prompt, exact smoke fixture, and current capability boundaries, see [Guile Pix Agent Handoff](docs/agent-animation-handoff.md).
 

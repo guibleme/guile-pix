@@ -4,3 +4,4 @@ export * from './composite.js';
 export * from './hash.js';
 export * from './animationBundle.js';
 export * from './walkRightGenerator.js';
+export * from './timing.js';

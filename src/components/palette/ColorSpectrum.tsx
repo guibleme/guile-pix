@@ -35,7 +35,7 @@ export default function ColorSpectrum({ hsb, onChange }: ColorSpectrumProps) {
   const lastSvHRef = useRef<number>(-1);
   const svDragging = useRef(false);
   const hueDragging = useRef(false);
-  const [isDragging, setIsDragging] = useState(false);
+  const [dragTarget, setDragTarget] = useState<'sv' | 'hue' | null>(null);
 
   // ── Resizable spectrum height ──
   const [svHeight, setSvHeight] = useState(SV_DEFAULT_H);
@@ -46,7 +46,8 @@ export default function ColorSpectrum({ hsb, onChange }: ColorSpectrumProps) {
 
   // Load persisted height on mount
   useEffect(() => {
-    setSvHeight(loadHeight());
+    const frame = requestAnimationFrame(() => setSvHeight(loadHeight()));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   // Persist height on change (debounced by nature of pointerUp)
@@ -146,7 +147,7 @@ export default function ColorSpectrum({ hsb, onChange }: ColorSpectrumProps) {
     (e: React.PointerEvent) => {
       e.preventDefault();
       svDragging.current = true;
-      setIsDragging(true);
+      setDragTarget('sv');
       svCanvasRef.current?.setPointerCapture(e.pointerId);
       pickSV(e.clientX, e.clientY);
     },
@@ -163,7 +164,7 @@ export default function ColorSpectrum({ hsb, onChange }: ColorSpectrumProps) {
 
   const handleSVUp = useCallback(() => {
     svDragging.current = false;
-    setIsDragging(false);
+    setDragTarget(null);
   }, []);
 
   // ── Hue picking ──
@@ -186,7 +187,7 @@ export default function ColorSpectrum({ hsb, onChange }: ColorSpectrumProps) {
     (e: React.PointerEvent) => {
       e.preventDefault();
       hueDragging.current = true;
-      setIsDragging(true);
+      setDragTarget('hue');
       hueCanvasRef.current?.setPointerCapture(e.pointerId);
       pickHue(e.clientX);
     },
@@ -203,13 +204,13 @@ export default function ColorSpectrum({ hsb, onChange }: ColorSpectrumProps) {
 
   const handleHueUp = useCallback(() => {
     hueDragging.current = false;
-    setIsDragging(false);
+    setDragTarget(null);
   }, []);
 
   const handleLostCapture = useCallback(() => {
     svDragging.current = false;
     hueDragging.current = false;
-    setIsDragging(false);
+    setDragTarget(null);
   }, []);
 
   // ── Resize handle ──
@@ -264,7 +265,7 @@ export default function ColorSpectrum({ hsb, onChange }: ColorSpectrumProps) {
         style={{
           height: `${svHeight}px`,
           imageRendering: 'auto',
-          cursor: isDragging && svDragging.current ? 'grabbing' : 'crosshair',
+          cursor: dragTarget === 'sv' ? 'grabbing' : 'crosshair',
           touchAction: 'none',
         }}
         onPointerDown={handleSVDown}
@@ -304,7 +305,7 @@ export default function ColorSpectrum({ hsb, onChange }: ColorSpectrumProps) {
         style={{
           height: '16px',
           imageRendering: 'auto',
-          cursor: isDragging && hueDragging.current ? 'grabbing' : 'pointer',
+          cursor: dragTarget === 'hue' ? 'grabbing' : 'pointer',
           touchAction: 'none',
         }}
         onPointerDown={handleHueDown}

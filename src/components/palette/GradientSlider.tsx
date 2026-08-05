@@ -23,8 +23,6 @@ export default function GradientSlider({
   const trackRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const [isDragging, setIsDragging] = useState(false);
-  const renderGradientRef = useRef(renderGradient);
-  renderGradientRef.current = renderGradient;
 
   // Re-render gradient track
   useEffect(() => {
@@ -35,8 +33,8 @@ export default function GradientSlider({
     const w = canvas.width;
     const h = canvas.height;
     ctx.clearRect(0, 0, w, h);
-    renderGradientRef.current(ctx, w, h);
-  });
+    renderGradient(ctx, w, h);
+  }, [renderGradient]);
 
   const pickValue = useCallback(
     (clientX: number) => {

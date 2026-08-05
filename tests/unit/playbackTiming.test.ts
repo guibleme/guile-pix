@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ticksToDurationsMs } from '../../packages/sprite-core/src';
 import { advanceLoopingFrames, resolveFrameDurationMs } from '../../src/lib/animation/playbackTiming';
 
 describe('playback timing', () => {
@@ -36,5 +37,11 @@ describe('playback timing', () => {
     expect(resolveFrameDurationMs(75, 10)).toBe(75);
     expect(resolveFrameDurationMs(undefined, 10)).toBe(100);
     expect(resolveFrameDurationMs(Number.NaN, 20)).toBe(50);
+  });
+
+  it('converts timeline ticks with cumulative boundaries and exact total duration', () => {
+    const durations = ticksToDurationsMs([8, 4, 4, 8, 4, 4, 8, 8], 24);
+    expect(durations.every((duration) => duration > 0)).toBe(true);
+    expect(durations.reduce((sum, duration) => sum + duration, 0)).toBe(2000);
   });
 });
