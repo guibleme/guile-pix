@@ -650,6 +650,9 @@ export function normalizeProjectFile(raw: unknown): ProjectFile | null {
   if (!isObject(raw) || !Array.isArray(raw.layers) || !Array.isArray(raw.frames)) {
     return null;
   }
+  if (raw.version === 2) {
+    return null;
+  }
   if (raw.layers.length > PROJECT_FILE_LIMITS.maxLayers) {
     return null;
   }

@@ -78,6 +78,13 @@ describe('normalizeProjectFile limits', () => {
     expect(normalized?.frames).toHaveLength(1);
   });
 
+  it('rejects an explicit version 2 document instead of flattening it as version 1', () => {
+    const raw = createBaseRawProject() as unknown as Record<string, unknown>;
+    raw.version = 2;
+
+    expect(normalizeProjectFile(raw)).toBeNull();
+  });
+
   it('rejects projects with too many layers', () => {
     const raw = createBaseRawProject();
     raw.layers = Array.from({ length: PROJECT_FILE_LIMITS.maxLayers + 1 }, (_, index) => ({
