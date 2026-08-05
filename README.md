@@ -150,6 +150,8 @@ Structural readiness is automated. Artistic approval remains human-owned.
 
 Legacy drawing primitives, transforms, template rendering, layer CRUD, and arbitrary animation generation are intentionally not registered until they use the same revision-safe document transaction.
 
+For a copy-paste production-agent prompt, exact smoke fixture, and current capability boundaries, see [Guile Pix Agent Handoff](docs/agent-animation-handoff.md).
+
 ## Contributing
 
 Contributions are welcome! Whether it's bug fixes, new features, translations, or template designs.

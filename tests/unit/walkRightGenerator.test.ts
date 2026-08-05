@@ -42,6 +42,27 @@ function resizeInvalidSource(document: SpriteDocumentV2): void {
 }
 
 describe('constrained semantic walk_right generator', () => {
+  it('ships a loadable source fixture for the documented agent smoke workflow', async () => {
+    const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'guile-pix-handoff-'));
+    temporaryDirectories.push(outputDir);
+    const bridge = new AnimationBridge({ outputDir });
+    const loaded = structured(await bridge.loadProject({
+      filePath: path.resolve('examples/agent-animation/cornerfall-fighter-right-16.dogsprite'),
+    }));
+    const generated = await bridge.generateWalkRight({
+      projectId: loaded.projectId as string,
+      expectedRevision: loaded.revision as number,
+      brief: fixedBrief(),
+    });
+
+    expect(loaded).toEqual(expect.objectContaining({ ok: true, version: 2, revision: 0 }));
+    expect(structured(generated)).toEqual(expect.objectContaining({
+      ok: true,
+      revision: 1,
+      artisticApproval: 'pending_human_review',
+    }));
+  });
+
   it('owns every source pixel once and deterministically transforms semantic regions instead of replaying golden outputs', async () => {
     const source = makeGoldenWalkDocument();
     const sourceBefore = canonicalJson(source);
