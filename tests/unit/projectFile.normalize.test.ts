@@ -1,4 +1,6 @@
-import { normalizeProjectFile, PROJECT_FILE_LIMITS } from '../../src/lib/export/projectFile';
+import { deserializeProject, normalizeProjectFile, PROJECT_FILE_LIMITS } from '../../src/lib/export/projectFile';
+import { importSpriteDocumentV2 } from '../../src/lib/project/spriteDocumentV2Import';
+import type { SpriteDocumentV2 } from '../../packages/sprite-core/src';
 import { describe, expect, it } from 'vitest';
 
 interface RawLayer {
@@ -70,6 +72,47 @@ function createBaseRawProject(): RawProject {
   };
 }
 
+function createBaseV2Document(): SpriteDocumentV2 {
+  return {
+    version: 2,
+    project: {
+      id: 'project-v2',
+      name: 'MCP Project',
+      width: 1,
+      height: 1,
+      createdAt: 1,
+      updatedAt: 2,
+    },
+    layers: [{
+      id: 'layer-1',
+      name: 'Layer 1',
+      visible: true,
+      locked: false,
+      opacity: 1,
+      blendMode: 'normal',
+    }],
+    cels: {
+      'cel-1': { id: 'cel-1', data: [255, 0, 0, 255] },
+      'cel-2': { id: 'cel-2', data: [0, 0, 255, 255] },
+    },
+    frames: [
+      { id: 'frame-1', durationMs: 100, celRefs: { 'layer-1': 'cel-1' } },
+      { id: 'frame-2', durationMs: 100, celRefs: { 'layer-1': 'cel-2' } },
+    ],
+    clip: {
+      id: 'clip-default',
+      name: 'default',
+      frameIds: ['frame-1', 'frame-2'],
+      loop: 'linear',
+    },
+    palette: ['#ff0000', '#0000ff'],
+    pivotPx: { x: 0, y: 0 },
+    activeLayerId: 'layer-1',
+    activeFrameId: 'frame-2',
+    revision: 3,
+  };
+}
+
 describe('normalizeProjectFile limits', () => {
   it('normalizes a valid project', () => {
     const normalized = normalizeProjectFile(createBaseRawProject());
@@ -78,11 +121,35 @@ describe('normalizeProjectFile limits', () => {
     expect(normalized?.frames).toHaveLength(1);
   });
 
-  it('rejects an explicit version 2 document instead of flattening it as version 1', () => {
-    const raw = createBaseRawProject() as unknown as Record<string, unknown>;
-    raw.version = 2;
+  it('imports a valid version 2 document with frame order, timing, pixels, and active frame intact', () => {
+    const normalized = normalizeProjectFile(createBaseV2Document());
+    const deserialized = deserializeProject(createBaseV2Document());
 
-    expect(normalizeProjectFile(raw)).toBeNull();
+    expect(normalized).toEqual(expect.objectContaining({
+      version: 1,
+      activeFrameId: 'frame-2',
+      loop: true,
+      fps: 10,
+    }));
+    expect(normalized?.frames.map((frame) => [frame.id, frame.duration])).toEqual([
+      ['frame-1', 100],
+      ['frame-2', 100],
+    ]);
+    expect(normalized?.frames[1].layerData['layer-1']).toEqual([0, 0, 255, 255]);
+    expect(deserialized.activeFrameIndex).toBe(1);
+    expect(deserialized.loop).toBe(true);
+  });
+
+  it('fails closed when version 2 linked cels cannot be preserved by the editor', () => {
+    const linked = createBaseV2Document();
+    linked.frames[1].celRefs['layer-1'] = 'cel-1';
+    delete linked.cels['cel-2'];
+
+    expect(importSpriteDocumentV2(linked, PROJECT_FILE_LIMITS.maxProjectPixelBytes)).toEqual(expect.objectContaining({
+      ok: false,
+      code: 'UNSUPPORTED_LINKED_CELS',
+    }));
+    expect(normalizeProjectFile(linked)).toBeNull();
   });
 
   it('rejects projects with too many layers', () => {

@@ -89,17 +89,16 @@ export function saveCurrentProjectToDisk(): void {
 }
 
 export function applyProjectFile(file: ProjectFile | unknown, reason: RecoveryReason = 'manual-load'): void {
-  const { project, layers, activeLayerId, frames, fps } = deserializeProject(file);
-  const timeline = useTimelineStore.getState();
+  const { project, layers, activeLayerId, frames, fps, activeFrameIndex, loop } = deserializeProject(file);
 
   useProjectStore.setState({ project });
   useLayerStore.setState({ layers, activeLayerId });
   useTimelineStore.setState({
     frames: frames.map((frame, index) => ({ ...frame, index })),
-    activeFrameIndex: 0,
+    activeFrameIndex,
     fps,
     isPlaying: false,
-    loop: timeline.loop,
+    loop,
   });
 
   useHistoryStore.getState().clear();

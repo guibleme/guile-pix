@@ -466,7 +466,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       activeLayerId: parsed.activeLayerId,
       frames: parsed.frames,
       fps: parsed.fps,
-      activeFrameIndex: 0,
+      activeFrameIndex: parsed.activeFrameIndex,
     }, options);
   },
 }));

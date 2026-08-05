@@ -8,7 +8,7 @@ import {
   type CoreResult,
   type SpriteDocumentV2,
   type V1MigrationOptions,
-} from '../../../packages/sprite-core/src';
+} from '@guile-pix/sprite-core';
 
 export interface EditorSpriteDocumentSnapshotInput {
   project: ProjectSettings;

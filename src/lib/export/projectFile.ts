@@ -2,11 +2,14 @@ import { nanoid } from 'nanoid';
 import type { ProjectSettings } from '@/types/project';
 import type { Layer, BlendMode } from '@/types/layer';
 import type { Frame } from '@/types/frame';
+import { importSpriteDocumentV2 } from '@/lib/project/spriteDocumentV2Import';
 export interface ProjectFile {
   version: 1;
   project: ProjectSettings;
   layers: Layer[];
   activeLayerId: string;
+  activeFrameId?: string;
+  loop?: boolean;
   frames: Array<{
     id: string;
     index: number;
@@ -612,6 +615,12 @@ async function resolveProjectFromSelectedFiles(files: File[]): Promise<ProjectFi
     }
     const normalized = normalizeProjectFile(parsedRaw);
     if (normalized) return normalized;
+
+    if (isObject(parsedRaw) && parsedRaw.version === 2) {
+      const imported = importSpriteDocumentV2(parsedRaw, PROJECT_FILE_LIMITS.maxProjectPixelBytes);
+      if (!imported.ok) throw new Error(imported.message);
+      return imported.value;
+    }
   }
 
   for (const jsonFile of jsonLikeFiles) {
@@ -647,10 +656,11 @@ async function resolveProjectFromSelectedFiles(files: File[]): Promise<ProjectFi
 }
 
 export function normalizeProjectFile(raw: unknown): ProjectFile | null {
-  if (!isObject(raw) || !Array.isArray(raw.layers) || !Array.isArray(raw.frames)) {
-    return null;
+  if (isObject(raw) && raw.version === 2) {
+    const imported = importSpriteDocumentV2(raw, PROJECT_FILE_LIMITS.maxProjectPixelBytes);
+    return imported.ok ? imported.value : null;
   }
-  if (raw.version === 2) {
+  if (!isObject(raw) || !Array.isArray(raw.layers) || !Array.isArray(raw.frames)) {
     return null;
   }
   if (raw.layers.length > PROJECT_FILE_LIMITS.maxLayers) {
@@ -726,6 +736,10 @@ export function normalizeProjectFile(raw: unknown): ProjectFile | null {
   const createdAt = toTimestamp(projectSource.createdAt, now);
   const updatedAt = toTimestamp(projectSource.updatedAt, createdAt);
   const fps = toInteger(raw.fps, DEFAULT_FPS, 1, 120);
+  const activeFrameId = typeof raw.activeFrameId === 'string'
+    && frames.some((frame) => frame.id === raw.activeFrameId)
+    ? raw.activeFrameId
+    : frames[0].id;
 
   return {
     version: 1,
@@ -741,6 +755,8 @@ export function normalizeProjectFile(raw: unknown): ProjectFile | null {
     },
     layers,
     activeLayerId,
+    activeFrameId,
+    loop: typeof raw.loop === 'boolean' ? raw.loop : true,
     frames,
     fps,
   };
@@ -779,6 +795,8 @@ export function deserializeProject(file: unknown): {
   activeLayerId: string;
   frames: Frame[];
   fps: number;
+  activeFrameIndex: number;
+  loop: boolean;
 } {
   const normalized = normalizeProjectFile(file);
   if (!normalized) {
@@ -801,6 +819,8 @@ export function deserializeProject(file: unknown): {
       ),
     })),
     fps: normalized.fps,
+    activeFrameIndex: Math.max(0, normalized.frames.findIndex((frame) => frame.id === normalized.activeFrameId)),
+    loop: normalized.loop ?? true,
   };
 }
 

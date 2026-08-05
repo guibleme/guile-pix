@@ -19,6 +19,7 @@
     "sprites:build": "tsx scripts/buildSpriteLibrary.ts"
   },
   "dependencies": {
+    "@guile-pix/sprite-core": "file:packages/sprite-core",
     "@vercel/analytics": "^2.0.1",
     "gifenc": "^1.0.3",
     "lucide-react": "^0.564.0",
