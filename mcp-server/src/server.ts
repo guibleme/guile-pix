@@ -1,17 +1,50 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { AnimationBridge } from './animationBridge.js';
 import { PIXEL_ART_INSTRUCTIONS } from './instructions.js';
+import {
+  AssistRequestError,
+  AssistRequestStore,
+  assistStatusSchema,
+} from './assistRequests.js';
 
 const resultSchema = z.object({
   ok: z.boolean(),
   operation: z.string().optional(),
   projectId: z.string().optional(),
   revision: z.number().int().nonnegative().optional(),
-  code: z.enum(['STALE_REVISION', 'INVALID_TARGET', 'INVALID_CEL_REF', 'VALIDATION_FAILED']).optional(),
+  code: z.enum(['STALE_REVISION', 'INVALID_TARGET', 'INVALID_CEL_REF', 'VALIDATION_FAILED', 'NOT_FOUND', 'ILLEGAL_TRANSITION']).optional(),
   message: z.string().optional(),
   correctiveAction: z.string().optional(),
 }).passthrough();
+
+/** Mirrors the bridge's CallToolResult shape for the assist-queue tools. */
+function assistResult(payload: Record<string, unknown>, isError = false): CallToolResult {
+  return {
+    content: [{ type: 'text', text: JSON.stringify(payload) }],
+    structuredContent: payload,
+    ...(isError ? { isError: true } : {}),
+  };
+}
+
+function assistError(error: AssistRequestError): CallToolResult {
+  const code = error.status === 404 ? 'NOT_FOUND' : error.status === 409 ? 'ILLEGAL_TRANSITION' : 'VALIDATION_FAILED';
+  return assistResult(
+    {
+      ok: false,
+      code,
+      message: error.message,
+      correctiveAction:
+        code === 'NOT_FOUND'
+          ? 'List the queue with list_assist_requests to find a live request id.'
+          : code === 'ILLEGAL_TRANSITION'
+            ? 'Check the request status first; only work requests you claimed, and only complete or fail claimed ones.'
+            : 'Fix the request fields and retry.',
+    },
+    true,
+  );
+}
 
 const projectId = z.string().min(1).describe('Project ID returned by create_sprite or load_project');
 const expectedRevision = z.number().int().nonnegative().describe('Current project revision; stale values fail without mutation');
@@ -32,6 +65,7 @@ export interface McpServerOptions {
 
 export function createMcpServerWithBridge(options: McpServerOptions = {}): { server: McpServer; bridge: AnimationBridge } {
   const bridge = new AnimationBridge(options);
+  const assistStore = new AssistRequestStore(options.outputDir);
   const server = new McpServer(
     { name: 'guile-pix-animation', version: '5.0.0' },
     { instructions: PIXEL_ART_INSTRUCTIONS },
@@ -237,6 +271,83 @@ export function createMcpServerWithBridge(options: McpServerOptions = {}): { ser
   server.registerTool('get_mask', { description: 'Read a named session mask and its preview bounds.', inputSchema: z.object({ projectId, name: z.string().min(1) }), outputSchema: resultSchema }, (args) => bridge.getMask(args));
   server.registerTool('apply_mask', { description: 'Revision-safely clear, recolor, copy, or move pixels through a session mask.', inputSchema: z.object({ projectId, expectedRevision, name: z.string().min(1), frameId: frameId.optional(), layer: z.string().min(1).optional(), action: z.enum(['clear', 'recolor', 'copy', 'move']), color: hexColor.optional(), translatePx: point.optional() }), outputSchema: resultSchema }, (args) => bridge.applyMask(args));
   server.registerTool('transform_region', { description: 'Transform a masked region about a zero-based pixel pivot with atomic collision, hole, bounds, and mass reporting.', inputSchema: z.object({ projectId, expectedRevision, frameId: frameId.optional(), layer: z.string().min(1).optional(), mask, pivotPx: point, translatePx: point.optional(), rotateDegrees: z.number().finite().optional(), fillMode: z.enum(['transparent', 'source', 'bridge']), preservePixelMass: z.boolean().optional(), anchoredRegions: z.array(z.object({ name: z.string().min(1), mask })).optional() }), outputSchema: resultSchema }, (args) => bridge.transformRegion(args));
+
+  // Assist queue: the editor submits small edit requests (pin/region/frame
+  // target + prompt); the agent lists, claims, applies via the tools above,
+  // saves, then completes. Only work requests you claimed.
+  server.registerTool('list_assist_requests', {
+    description: 'List AI assist requests from the editor queue, newest first. Filter by project and/or status.',
+    inputSchema: z.object({
+      projectId: z.string().min(1).optional(),
+      status: assistStatusSchema.optional(),
+    }),
+    outputSchema: resultSchema,
+  }, (args) => assistResult({ ok: true, operation: 'list_assist_requests', requests: assistStore.list(args) }));
+
+  server.registerTool('claim_assist_request', {
+    description: 'Claim a pending assist request so no other agent works it. Only work requests you claimed.',
+    inputSchema: z.object({
+      requestId: z.string().min(1),
+      agent: z.string().min(1).max(100).optional().describe('Free-form agent name, e.g. "opencode", "codex", "claude"'),
+    }),
+    outputSchema: resultSchema,
+  }, (args) => {
+    try {
+      const request = assistStore.update(args.requestId, { status: 'claimed', claimedBy: args.agent ?? 'agent' });
+      return assistResult({ ok: true, operation: 'claim_assist_request', request });
+    } catch (error) {
+      if (error instanceof AssistRequestError) return assistError(error);
+      throw error;
+    }
+  });
+
+  server.registerTool('complete_assist_request', {
+    description: 'Mark a claimed assist request done after saving the edit. The note should say what changed.',
+    inputSchema: z.object({
+      requestId: z.string().min(1),
+      note: z.string().max(2000).optional().describe('What changed, e.g. "recolored 42 px to #ff0000"'),
+    }),
+    outputSchema: resultSchema,
+  }, (args) => {
+    try {
+      const request = assistStore.update(args.requestId, { status: 'done', note: args.note });
+      return assistResult({ ok: true, operation: 'complete_assist_request', request });
+    } catch (error) {
+      if (error instanceof AssistRequestError) return assistError(error);
+      throw error;
+    }
+  });
+
+  server.registerTool('fail_assist_request', {
+    description: 'Mark a claimed assist request failed, with the reason. The editor shows the reason to the user.',
+    inputSchema: z.object({
+      requestId: z.string().min(1),
+      reason: z.string().min(1).max(2000),
+    }),
+    outputSchema: resultSchema,
+  }, (args) => {
+    try {
+      const request = assistStore.update(args.requestId, { status: 'failed', note: args.reason });
+      return assistResult({ ok: true, operation: 'fail_assist_request', request });
+    } catch (error) {
+      if (error instanceof AssistRequestError) return assistError(error);
+      throw error;
+    }
+  });
+
+  server.registerTool('cancel_assist_request', {
+    description: 'Cancel a pending assist request. Only pending requests can be cancelled.',
+    inputSchema: z.object({ requestId: z.string().min(1) }),
+    outputSchema: resultSchema,
+  }, (args) => {
+    try {
+      const request = assistStore.update(args.requestId, { status: 'cancelled' });
+      return assistResult({ ok: true, operation: 'cancel_assist_request', request });
+    } catch (error) {
+      if (error instanceof AssistRequestError) return assistError(error);
+      throw error;
+    }
+  });
 
   return { server, bridge };
 }

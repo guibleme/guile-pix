@@ -44,9 +44,9 @@ describe('MCP animation protocol', () => {
 
       const listed = await client.listTools();
       const expectedNames = [
-        'apply_mask', 'clear_layer', 'create_clip', 'create_frame', 'create_layer', 'create_sprite', 'define_mask', 'delete_clip', 'delete_frame', 'delete_layer',
-        'draw_primitives', 'duplicate_frame', 'duplicate_frame_range', 'export_animation_bundle', 'export_animation_preview', 'generate_walk_right', 'get_animation_review',
-        'get_mask', 'get_palette', 'get_project_snapshot', 'link_cels', 'load_project', 'map_to_palette', 'redo', 'rename_clip', 'reorder_frames', 'reorder_layers', 'replace_color',
+        'apply_mask', 'cancel_assist_request', 'claim_assist_request', 'clear_layer', 'complete_assist_request', 'create_clip', 'create_frame', 'create_layer', 'create_sprite', 'define_mask', 'delete_clip', 'delete_frame', 'delete_layer',
+        'draw_primitives', 'duplicate_frame', 'duplicate_frame_range', 'export_animation_bundle', 'export_animation_preview', 'fail_assist_request', 'generate_walk_right', 'get_animation_review',
+        'get_mask', 'get_palette', 'get_project_snapshot', 'link_cels', 'list_assist_requests', 'load_project', 'map_to_palette', 'redo', 'rename_clip', 'reorder_frames', 'reorder_layers', 'replace_color',
         'save_project', 'select_frame', 'set_active_layer', 'set_clip_metadata', 'set_frame_duration', 'set_pixels', 'set_project_metadata', 'set_project_palette',
         'transform_region', 'undo', 'unlink_cel', 'update_layer', 'validate_animation',
       ];
@@ -123,6 +123,76 @@ describe('MCP animation protocol', () => {
         artisticApproval: 'pending_human_review',
       }));
       expect(generatedWalk.content.some((item) => item.type === 'image')).toBe(true);
+    } finally {
+      await client.close();
+      await server.close();
+    }
+  });
+
+  it('works the assist queue end to end: list -> claim -> double-claim rejected -> complete', async () => {
+    const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'guile-pix-protocol-assist-'));
+    temporaryDirectories.push(outputDir);
+    // Seed a request the way the sidecar would (same file store).
+    const { AssistRequestStore } = await import('../../mcp-server/src/assistRequests');
+    const store = new AssistRequestStore(outputDir);
+    const seeded = store.create({
+      projectId: 'proj-1',
+      projectName: 'Pearl Knight',
+      prompt: 'make this circle red',
+      target: { kind: 'pin', point: { x: 12, y: 8 } },
+      context: { frameId: 'frame-0', layerId: 'layer-1', width: 24, height: 54, revision: 4 },
+      mask: { runs: [{ y: 8, xStart: 12, xEnd: 12 }] },
+    });
+
+    const server = createMcpServer({ outputDir });
+    const client = new Client({ name: 'guile-pix-test-client', version: '1.0.0' });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    try {
+      const listed = (await client.callTool({
+        name: 'list_assist_requests',
+        arguments: { projectId: 'proj-1', status: 'pending' },
+      })) as CallToolResult;
+      const listedData = listed.structuredContent as { ok: boolean; requests: Array<{ id: string }> };
+      expect(listedData.ok).toBe(true);
+      expect(listedData.requests.map((entry) => entry.id)).toEqual([seeded.id]);
+
+      const claimed = (await client.callTool({
+        name: 'claim_assist_request',
+        arguments: { requestId: seeded.id, agent: 'opencode' },
+      })) as CallToolResult;
+      expect(claimed.isError).not.toBe(true);
+      expect(claimed.structuredContent).toEqual(expect.objectContaining({
+        ok: true,
+        operation: 'claim_assist_request',
+      }));
+
+      const doubleClaim = (await client.callTool({
+        name: 'claim_assist_request',
+        arguments: { requestId: seeded.id, agent: 'codex' },
+      })) as CallToolResult;
+      expect(doubleClaim.isError).toBe(true);
+      expect(doubleClaim.structuredContent).toEqual(expect.objectContaining({
+        ok: false,
+        code: 'ILLEGAL_TRANSITION',
+      }));
+
+      const completed = (await client.callTool({
+        name: 'complete_assist_request',
+        arguments: { requestId: seeded.id, note: 'recolored 1 px to #ff0000' },
+      })) as CallToolResult;
+      expect(completed.isError).not.toBe(true);
+      expect(completed.structuredContent).toEqual(expect.objectContaining({
+        ok: true,
+        operation: 'complete_assist_request',
+      }));
+
+      const done = store.get(seeded.id);
+      expect(done?.status).toBe('done');
+      expect(done?.note).toBe('recolored 1 px to #ff0000');
+      expect(done?.claimedBy).toBe('opencode');
     } finally {
       await client.close();
       await server.close();
