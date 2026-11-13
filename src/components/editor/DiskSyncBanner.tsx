@@ -51,7 +51,9 @@ export default function DiskSyncBanner() {
   };
 
   const handleSaveCopy = () => {
-    void saveCurrentProjectToDisk();
+    // Force the download path: "save mine as a copy" must not POST over the
+    // disk file (the default save would, now that V2 writes via the sidecar).
+    void saveCurrentProjectToDisk({ via: 'download' });
     acknowledgeRemote();
   };
 

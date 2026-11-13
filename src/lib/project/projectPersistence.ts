@@ -104,7 +104,12 @@ export function openRecoverySnapshot(snapshotId: string): boolean {
  * during the POST still saves the right content; store updates afterwards
  * only run if the same document is still active.
  */
-export async function saveCurrentProjectToDisk(): Promise<'sidecar' | 'download'> {
+export async function saveCurrentProjectToDisk(options?: {
+  /** 'auto' (default): POST to the sidecar when the document has disk identity,
+   *  download otherwise. 'download': always download — used by the conflict
+   *  banner's "Save mine as a copy", which must not overwrite the disk file. */
+  via?: 'auto' | 'download';
+}): Promise<'sidecar' | 'download'> {
   const { project, layers, activeLayerId, frames, fps } = getCurrentProjectData();
   const { activeFrameIndex, loop } = useTimelineStore.getState();
   const snapshot = snapshotEditorDocumentV2({ project, layers, activeLayerId, frames, activeFrameIndex, fps, loop, sourceDocument: getActiveSourceDocumentV2() });
@@ -113,7 +118,7 @@ export async function saveCurrentProjectToDisk(): Promise<'sidecar' | 'download'
   const diskSync = useWorkspaceStore.getState().documents.find((doc) => doc.id === documentId)?.diskSync;
   const stillActive = () => useWorkspaceStore.getState().activeDocumentId === documentId;
 
-  if (diskSync) {
+  if (diskSync && options?.via !== 'download') {
     try {
       const saved = await saveSidecarProjectFile(diskSync.projectId, snapshot.value);
       if (stillActive()) {
