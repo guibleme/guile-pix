@@ -5,6 +5,7 @@ import type { Layer } from '@/types/layer';
 import type { Frame } from '@/types/frame';
 import type { HistoryEntry, HistoryLayerStateSnapshot } from '@/types/history';
 import { deserializeProject, serializeProject } from '@/lib/export/projectFile';
+import { snapshotEditorDocumentV2 } from '@/lib/project/editorSpriteDocumentAdapter';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useLayerStore } from '@/stores/useLayerStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
@@ -128,28 +129,52 @@ function cloneFrames(frames: Frame[]): Frame[] {
   }));
 }
 
+/**
+ * Baseline signature for a document snapshot. MUST mirror
+ * getCurrentProjectSnapshot() in projectPersistence exactly (v2 canonical
+ * snapshot, serializeProject fallback): refreshUnsavedChangesState compares
+ * the live snapshot against this baseline, and any divergence marks the
+ * document dirty forever. A previous version used serializeProject here
+ * while refresh used the v2 snapshot, so every tab-loaded v2 file showed
+ * dirty immediately — which also silently disabled clean auto-reload in
+ * disk sync (the clean path never ran because isDirty was always true).
+ */
 function getSignatureFromData(data: {
   project: ProjectSettings;
   layers: Layer[];
   activeLayerId: string;
   frames: Frame[];
+  activeFrameIndex: number;
   fps: number;
+  loop: boolean;
+  sourceDocumentV2?: SpriteDocumentV2;
 }): string {
   const normalizedFrames = cloneFrames(data.frames);
-  const file = serializeProject(
-    { ...data.project },
-    data.layers.map((layer) => ({ ...layer })),
-    data.activeLayerId,
-    normalizedFrames,
-    data.fps
-  );
-  return JSON.stringify(file);
+  const snapshot = snapshotEditorDocumentV2({
+    project: { ...data.project },
+    layers: data.layers.map((layer) => ({ ...layer })),
+    activeLayerId: data.activeLayerId,
+    frames: normalizedFrames,
+    activeFrameIndex: data.activeFrameIndex,
+    fps: data.fps,
+    loop: data.loop,
+    sourceDocument: data.sourceDocumentV2 ? structuredClone(data.sourceDocumentV2) : undefined,
+  });
+  return snapshot.ok
+    ? JSON.stringify(snapshot.value)
+    : JSON.stringify(serializeProject(
+        { ...data.project },
+        data.layers.map((layer) => ({ ...layer })),
+        data.activeLayerId,
+        normalizedFrames,
+        data.fps,
+      ));
 }
 
 function captureCurrentDocumentData(sourceDocumentV2?: SpriteDocumentV2, diskSync?: DiskSyncInfo): WorkspaceDocumentData {
   const project = useProjectStore.getState().project;
   const { layers, activeLayerId } = useLayerStore.getState();
-  const { frames, activeFrameIndex, fps } = useTimelineStore.getState();
+  const { frames, activeFrameIndex, fps, loop } = useTimelineStore.getState();
   const { undoStack, redoStack } = useHistoryStore.getState();
   const persistence = usePersistenceStore.getState();
   const normalizedFrames = cloneFrames(frames);
@@ -158,7 +183,10 @@ function captureCurrentDocumentData(sourceDocumentV2?: SpriteDocumentV2, diskSyn
     layers,
     activeLayerId,
     frames: normalizedFrames,
+    activeFrameIndex,
     fps,
+    loop,
+    sourceDocumentV2,
   });
 
   return {
@@ -210,12 +238,19 @@ function createDocumentDataFromInput(input: CreateWorkspaceDocumentInput): Works
   const activeFrameIndex = Math.max(0, Math.min(input.activeFrameIndex ?? 0, Math.max(0, frames.length - 1)));
   const project = { ...input.project };
   const layers = input.layers.map((layer) => ({ ...layer }));
+  // Loop comes from the timeline store: applyDocumentToStores keeps the
+  // store's loop for the new document, and the live snapshot reads it from
+  // the same store — the baseline must agree with both.
+  const loop = useTimelineStore.getState().loop;
   const baselineSignature = getSignatureFromData({
     project,
     layers,
     activeLayerId: input.activeLayerId,
     frames,
+    activeFrameIndex,
     fps: input.fps,
+    loop,
+    sourceDocumentV2: input.sourceDocumentV2,
   });
 
   return {
