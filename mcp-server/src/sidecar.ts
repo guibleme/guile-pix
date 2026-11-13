@@ -13,6 +13,16 @@
  *   GET  /projects/:id/events     -> SSE stream of `revision` events (+ :heartbeat every 20 s)
  *   POST /projects/:id/file       -> validate + atomically write a v2 .dogsprite,
  *                                    refresh the bridge session, notify subscribers
+ *   POST /assist-requests         -> submit an AI assist request (201 { id, status })
+ *   GET  /assist-requests         -> list requests (?projectId=&status=, newest first)
+ *   GET  /assist-requests/:id     -> one request
+ *   PATCH /assist-requests/:id    -> status transition ({ status, claimedBy?, note? });
+ *                                    409 on an illegal transition
+ *
+ * Assist requests are JSON files in <outputDir>/assist-requests/ (see
+ * assistRequests.ts, shared with the MCP tools). The editor submits; the
+ * agent lists/claims/completes via MCP; the agent's save lands on disk
+ * where the sync loop picks it up.
  *
  * Identity: a project is addressed by its document id (`document.project.id`),
  * which the editor preserves when it loads and saves v2 documents. If several
@@ -34,11 +44,20 @@ import * as http from 'node:http';
 import { deserializeDocumentV2 } from '@guile-pix/sprite-core';
 import { AnimationBridge, safeName } from './animationBridge.js';
 import { getOutputDir } from './outputDir.js';
+import {
+  AssistRequestError,
+  AssistRequestStore,
+  assistRequestCreateSchema,
+  assistRequestPatchSchema,
+  assistStatusSchema,
+  type AssistStatus,
+} from './assistRequests.js';
 
-export const SIDECAR_VERSION = '2.0.0';
+export const SIDECAR_VERSION = '2.1.0';
 export const SIDECAR_DEFAULT_PORT = 3101;
 export const SIDECAR_DEFAULT_HOST = '127.0.0.1';
 export const SIDECAR_MAX_BODY_BYTES = 64 * 1024 * 1024;
+export const ASSIST_MAX_BODY_BYTES = 1024 * 1024;
 const HEARTBEAT_MS = 20_000;
 const WATCH_DEBOUNCE_MS = 100;
 const RESCAN_MS = 5_000;
@@ -273,8 +292,34 @@ async function readBody(req: http.IncomingMessage, maxBytes: number): Promise<Bu
   return Buffer.concat(chunks);
 }
 
+/** Reads a JSON body for the small assist routes. Returns null after sending the error. */
+async function readJsonBody(
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  maxBytes: number,
+): Promise<unknown | null> {
+  let body: Buffer;
+  try {
+    body = await readBody(req, maxBytes);
+  } catch (error) {
+    if ((error as Error & { code?: string }).code === 'BODY_TOO_LARGE') {
+      sendError(res, 413, 'body_too_large', `Request body exceeds ${maxBytes} bytes`);
+      return null;
+    }
+    sendError(res, 400, 'bad_request', `Could not read request body: ${(error as Error).message}`);
+    return null;
+  }
+  try {
+    return JSON.parse(body.toString('utf8')) as unknown;
+  } catch {
+    sendError(res, 400, 'invalid_json', 'Request body is not valid JSON');
+    return null;
+  }
+}
+
 export function createSidecarServer(options: SidecarOptions = {}): http.Server {
   const index = new ProjectDiskIndex(options.outputDir);
+  const assistStore = new AssistRequestStore(options.outputDir);
   const hub = new RevisionEventHub();
   const lastEmitted = new Map<string, { revision: number; sha256: string }>();
   const bridge = options.bridge;
@@ -380,7 +425,7 @@ export function createSidecarServer(options: SidecarOptions = {}): http.Server {
     const origin = req.headers.origin;
     if (isLocalhostOrigin(origin)) {
       res.setHeader('access-control-allow-origin', origin as string);
-      res.setHeader('access-control-allow-methods', 'GET, POST, OPTIONS');
+      res.setHeader('access-control-allow-methods', 'GET, POST, PATCH, OPTIONS');
       res.setHeader('access-control-allow-headers', 'content-type');
       res.setHeader('vary', 'Origin');
     }
@@ -409,6 +454,72 @@ export function createSidecarServer(options: SidecarOptions = {}): http.Server {
         if (req.method === 'GET' && segments.length === 1 && segments[0] === 'projects') {
           sendJson(res, 200, { projects: index.list() });
           return;
+        }
+
+        if (req.method === 'POST' && segments.length === 1 && segments[0] === 'assist-requests') {
+          const body = await readJsonBody(req, res, ASSIST_MAX_BODY_BYTES);
+          if (body === null) return;
+          const validated = assistRequestCreateSchema.safeParse(body);
+          if (!validated.success) {
+            sendError(res, 400, 'validation_failed', validated.error.issues[0]?.message ?? 'Invalid assist request');
+            return;
+          }
+          if (!index.get(validated.data.projectId)) {
+            sendError(res, 400, 'unknown_project', `No .dogsprite file for project "${validated.data.projectId}"`);
+            return;
+          }
+          const created = assistStore.create(validated.data);
+          sendJson(res, 201, { id: created.id, status: created.status });
+          return;
+        }
+
+        if (req.method === 'GET' && segments.length === 1 && segments[0] === 'assist-requests') {
+          const projectId = url.searchParams.get('projectId') ?? undefined;
+          const statusParam = url.searchParams.get('status');
+          let status: AssistStatus | undefined;
+          if (statusParam !== null) {
+            const parsed = assistStatusSchema.safeParse(statusParam);
+            if (!parsed.success) {
+              sendError(res, 400, 'validation_failed', `Unknown assist status "${statusParam}"`);
+              return;
+            }
+            status = parsed.data;
+          }
+          sendJson(res, 200, { requests: assistStore.list({ projectId, status }) });
+          return;
+        }
+
+        if (segments.length === 2 && segments[0] === 'assist-requests') {
+          const requestId = decodeURIComponent(segments[1]);
+          if (req.method === 'GET') {
+            const request = assistStore.get(requestId);
+            if (!request) {
+              sendError(res, 404, 'not_found', `No assist request "${requestId}"`);
+              return;
+            }
+            sendJson(res, 200, request);
+            return;
+          }
+          if (req.method === 'PATCH') {
+            const body = await readJsonBody(req, res, ASSIST_MAX_BODY_BYTES);
+            if (body === null) return;
+            const validated = assistRequestPatchSchema.safeParse(body);
+            if (!validated.success) {
+              sendError(res, 400, 'validation_failed', validated.error.issues[0]?.message ?? 'Invalid assist patch');
+              return;
+            }
+            try {
+              const updated = assistStore.update(requestId, validated.data);
+              sendJson(res, 200, updated);
+            } catch (error) {
+              if (error instanceof AssistRequestError) {
+                sendError(res, error.status, error.code, error.message);
+                return;
+              }
+              throw error;
+            }
+            return;
+          }
         }
 
         if (segments.length === 3 && segments[0] === 'projects') {
