@@ -56,6 +56,10 @@ reports `unreachable` and retries silently.
   - Disk revision at or behind the revision the editor opened → baseline
     silently (`lastSeenRevision`/`lastSeenHash`).
   - Disk revision ahead → treated as a remote change (see below).
+- V2 adds push: with disk identity the editor opens an EventSource to
+  `/projects/:id/events`. Polling stays as the fallback — every 2 s while SSE
+  is not connected, and every 10 s as a safety net while it is (fs.watch is
+  best-effort; the net catches anything the stream misses).
 - If several files share a project id, the most recently modified one wins.
 - Disk identity lives per document in the workspace store (`diskSync`, next to
   `sourceDocumentV2`) and is deliberately NOT persisted in the workspace

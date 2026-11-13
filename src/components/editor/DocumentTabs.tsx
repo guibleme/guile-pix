@@ -60,7 +60,7 @@ export default function DocumentTabs() {
       const decision = await promptUnsavedChanges(t('tabs.action.closeDocument', 'Close Document'));
       if (decision === 'cancel') return;
       if (decision === 'save') {
-        saveCurrentProjectToDisk();
+        void saveCurrentProjectToDisk();
       }
     }
 
@@ -80,7 +80,7 @@ export default function DocumentTabs() {
         return;
       }
       if (decision === 'save') {
-        saveCurrentProjectToDisk();
+        void saveCurrentProjectToDisk();
       }
     }
     closeOtherDocuments(docId);

@@ -30,7 +30,7 @@ export interface McpServerOptions {
   outputDir?: string;
 }
 
-export function createMcpServer(options: McpServerOptions = {}): McpServer {
+export function createMcpServerWithBridge(options: McpServerOptions = {}): { server: McpServer; bridge: AnimationBridge } {
   const bridge = new AnimationBridge(options);
   const server = new McpServer(
     { name: 'guile-pix-animation', version: '5.0.0' },
@@ -238,5 +238,9 @@ export function createMcpServer(options: McpServerOptions = {}): McpServer {
   server.registerTool('apply_mask', { description: 'Revision-safely clear, recolor, copy, or move pixels through a session mask.', inputSchema: z.object({ projectId, expectedRevision, name: z.string().min(1), frameId: frameId.optional(), layer: z.string().min(1).optional(), action: z.enum(['clear', 'recolor', 'copy', 'move']), color: hexColor.optional(), translatePx: point.optional() }), outputSchema: resultSchema }, (args) => bridge.applyMask(args));
   server.registerTool('transform_region', { description: 'Transform a masked region about a zero-based pixel pivot with atomic collision, hole, bounds, and mass reporting.', inputSchema: z.object({ projectId, expectedRevision, frameId: frameId.optional(), layer: z.string().min(1).optional(), mask, pivotPx: point, translatePx: point.optional(), rotateDegrees: z.number().finite().optional(), fillMode: z.enum(['transparent', 'source', 'bridge']), preservePixelMass: z.boolean().optional(), anchoredRegions: z.array(z.object({ name: z.string().min(1), mask })).optional() }), outputSchema: resultSchema }, (args) => bridge.transformRegion(args));
 
-  return server;
+  return { server, bridge };
+}
+
+export function createMcpServer(options: McpServerOptions = {}): McpServer {
+  return createMcpServerWithBridge(options).server;
 }

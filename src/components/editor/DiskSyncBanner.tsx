@@ -51,7 +51,7 @@ export default function DiskSyncBanner() {
   };
 
   const handleSaveCopy = () => {
-    saveCurrentProjectToDisk();
+    void saveCurrentProjectToDisk();
     acknowledgeRemote();
   };
 

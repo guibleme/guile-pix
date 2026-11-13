@@ -22,6 +22,7 @@ import {
 import { snapshotEditorDocumentV2 } from '@/lib/project/editorSpriteDocumentAdapter';
 import type { SpriteDocumentV2 } from '@guile-pix/sprite-core';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
+import { saveSidecarProjectFile } from '@/lib/diskSync/sidecarClient';
 
 function getActiveSourceDocumentV2(): SpriteDocumentV2 | undefined {
   const workspace = useWorkspaceStore.getState();
@@ -90,16 +91,56 @@ export function openRecoverySnapshot(snapshotId: string): boolean {
   return true;
 }
 
-export function saveCurrentProjectToDisk(): void {
+/**
+ * Save the current project. When the active document has disk identity (it
+ * matches a .dogsprite file the sidecar knows), the snapshot is POSTed to the
+ * sidecar first so the file on disk is updated in place and the bridge
+ * session stays in sync; the editor's last-seen state is advanced to the
+ * POST response so the save never triggers a spurious reload. Any failure
+ * (sidecar unreachable, 409 conflict, validation) falls back to the download.
+ * Returns which route actually saved the file.
+ *
+ * The snapshot is built synchronously up front, so a tab switch or close
+ * during the POST still saves the right content; store updates afterwards
+ * only run if the same document is still active.
+ */
+export async function saveCurrentProjectToDisk(): Promise<'sidecar' | 'download'> {
   const { project, layers, activeLayerId, frames, fps } = getCurrentProjectData();
   const { activeFrameIndex, loop } = useTimelineStore.getState();
   const snapshot = snapshotEditorDocumentV2({ project, layers, activeLayerId, frames, activeFrameIndex, fps, loop, sourceDocument: getActiveSourceDocumentV2() });
   if (!snapshot.ok) throw new Error(snapshot.issues[0]?.message ?? 'Could not create canonical v2 project');
+  const documentId = useWorkspaceStore.getState().activeDocumentId;
+  const diskSync = useWorkspaceStore.getState().documents.find((doc) => doc.id === documentId)?.diskSync;
+  const stillActive = () => useWorkspaceStore.getState().activeDocumentId === documentId;
+
+  if (diskSync) {
+    try {
+      const saved = await saveSidecarProjectFile(diskSync.projectId, snapshot.value);
+      if (stillActive()) {
+        useWorkspaceStore.getState().setActiveSourceDocumentV2(snapshot.value);
+        useWorkspaceStore.getState().setActiveDiskSync({
+          projectId: saved.projectId,
+          lastSeenRevision: saved.revision,
+          lastSeenHash: saved.sha256,
+        });
+        markCurrentProjectAsSavedBaseline();
+        const snapshotId = captureRecoverySnapshot('manual-save');
+        rememberCurrentProject(snapshotId);
+      }
+      return 'sidecar';
+    } catch (error) {
+      console.warn('Sidecar save failed, falling back to download:', error);
+    }
+  }
+
   saveSpriteDocumentV2ToFile(snapshot.value);
-  useWorkspaceStore.getState().setActiveSourceDocumentV2(snapshot.value);
-  markCurrentProjectAsSavedBaseline();
-  const snapshotId = captureRecoverySnapshot('manual-save');
-  rememberCurrentProject(snapshotId);
+  if (stillActive()) {
+    useWorkspaceStore.getState().setActiveSourceDocumentV2(snapshot.value);
+    markCurrentProjectAsSavedBaseline();
+    const snapshotId = captureRecoverySnapshot('manual-save');
+    rememberCurrentProject(snapshotId);
+  }
+  return 'download';
 }
 
 export function applyProjectFile(file: ProjectFile | unknown, reason: RecoveryReason = 'manual-load'): void {

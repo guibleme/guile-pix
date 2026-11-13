@@ -31,6 +31,34 @@ export interface LastSeenDiskState {
   sha256: string;
 }
 
+export interface SidecarSaveResult {
+  ok: boolean;
+  projectId: string;
+  revision: number;
+  sha256: string;
+  mtimeMs: number;
+  fileName: string;
+  sessionRefreshed: boolean;
+}
+
+export class SidecarHttpError extends Error {
+  readonly status: number;
+  readonly code: string;
+  readonly currentRevision?: number;
+
+  constructor(status: number, code: string, message: string, currentRevision?: number) {
+    super(message);
+    this.name = 'SidecarHttpError';
+    this.status = status;
+    this.code = code;
+    this.currentRevision = currentRevision;
+  }
+}
+
+export function sidecarEventsUrl(projectId: string): string {
+  return `${SIDECAR_BASE_URL}/projects/${encodeURIComponent(projectId)}/events`;
+}
+
 /**
  * The disk version counts as "new" when either the revision or the content hash
  * moved. Revision alone is not enough: the editor preserves the revision it
@@ -72,4 +100,34 @@ export async function fetchSidecarProjectFile(projectId: string): Promise<unknow
   if (response.status === 404) throw new Error(`Project "${projectId}" is not on disk anymore`);
   if (!response.ok) throw new Error(`Sidecar file fetch failed: HTTP ${response.status}`);
   return (await response.json()) as unknown;
+}
+
+/**
+ * Save a v2 document through the sidecar. Throws SidecarHttpError with
+ * status 409 / code STALE_REVISION when the agent holds newer unsaved work.
+ */
+export async function saveSidecarProjectFile(
+  projectId: string,
+  document: unknown,
+): Promise<SidecarSaveResult> {
+  const response = await sidecarFetch(`/projects/${encodeURIComponent(projectId)}/file`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(document),
+  });
+  if (!response.ok) {
+    let code = 'save_failed';
+    let message = `Sidecar save failed: HTTP ${response.status}`;
+    let currentRevision: number | undefined;
+    try {
+      const payload = (await response.json()) as { code?: unknown; message?: unknown; currentRevision?: unknown };
+      if (typeof payload.code === 'string') code = payload.code;
+      if (typeof payload.message === 'string') message = payload.message;
+      if (typeof payload.currentRevision === 'number') currentRevision = payload.currentRevision;
+    } catch {
+      // Fall back to the generic message above.
+    }
+    throw new SidecarHttpError(response.status, code, message, currentRevision);
+  }
+  return (await response.json()) as SidecarSaveResult;
 }
