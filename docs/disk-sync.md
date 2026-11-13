@@ -53,8 +53,13 @@ reports `unreachable` and retries silently.
   renames.
 - The editor polls every 2 s (V1) for the ACTIVE document only. Without disk
   identity it runs discovery (`GET /projects`, match by project id):
-  - Disk revision at or behind the revision the editor opened → baseline
-    silently (`lastSeenRevision`/`lastSeenHash`).
+  - Disk revision at or behind the revision the editor opened → compare the
+    loaded document against the disk file (canonical v2 JSON). Same content
+    → baseline silently (`lastSeenRevision`/`lastSeenHash`). Different
+    content → remote change (see below). The content compare closes the
+    load-window race: an agent save landing between the file read and the
+    first discovery tick (~2 s) has the same revision but different bytes,
+    and revision-only discovery would have swallowed it.
   - Disk revision ahead → treated as a remote change (see below).
 - V2 adds push: with disk identity the editor opens an EventSource to
   `/projects/:id/events`. Polling stays as the fallback — every 2 s while SSE
@@ -98,8 +103,23 @@ reports `unreachable` and retries silently.
   agent's layer/frame selection (pixels are unaffected).
 - CORS allows localhost origins only. The sidecar binds 127.0.0.1 and serves
   only top-level `*.dogsprite` files inside the output directory.
+- CSP: the sidecar origin must be in `connect-src` (see `next.config.ts`,
+  derived from `NEXT_PUBLIC_GUILE_PIX_SIDECAR_URL`). Without it the browser
+  blocks every sidecar fetch/EventSource and the editor silently works
+  standalone — curl and unit tests cannot catch this; only a browser check
+  can.
+- Dirty tracking depends on the baseline signature agreeing with the live
+  snapshot (`getSignatureFromData` in `useWorkspaceStore` must mirror
+  `getCurrentProjectSnapshot` in `projectPersistence`). A mismatch marks
+  every tab-loaded file dirty and silently disables clean auto-reload.
 
 ## Manual browser check (needs the mini)
+
+Automated version: `sprite-pipeline/disk-sync-verify/verify.mjs` in Kairo's
+workspace (Playwright, 15 checks: CSP fetch, clean auto-reload by name +
+pixel, banner + 3 exits, V2 POST save, download fallback). Last full run on
+the mini 2026-11-13: **15/15 passed** against branch `feat/sync-v1-v2`
+(`26eda20`). The script is scratch, not part of the repo.
 
 1. Start the sidecar + editor as above.
 2. Load a `.dogsprite` from the output directory (File → Open).
