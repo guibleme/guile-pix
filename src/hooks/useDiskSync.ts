@@ -6,6 +6,7 @@ import { useProjectStore } from '@/stores/useProjectStore';
 import { usePersistenceStore } from '@/stores/usePersistenceStore';
 import { useDiskSyncStore } from '@/stores/useDiskSyncStore';
 import { applyProjectFile } from '@/lib/project/projectPersistence';
+import { deserializeProject } from '@/lib/export/projectFile';
 import {
   fetchSidecarProjectFile,
   getSidecarRevision,
@@ -147,6 +148,27 @@ export function useDiskSync(): void {
           if (!entry) return;
           const sourceRevision = activeDoc.sourceDocumentV2?.revision ?? -1;
           if (entry.revision <= sourceRevision) {
+            // The disk may have changed between the file read and this first
+            // tick (same revision — the editor preserves it on save — but
+            // different bytes). Compare the loaded document against the disk
+            // file so a change in that window is a remote change, not a
+            // silent baseline. Comparing the LOADED doc (not live editor
+            // state) means local edits made in the window don't false-trip.
+            const loaded = activeDoc.sourceDocumentV2;
+            if (loaded) {
+              let diskDoc;
+              try {
+                const diskFile = await fetchSidecarProjectFile(projectId);
+                if (cancelled) return;
+                diskDoc = deserializeProject(diskFile).sourceDocumentV2;
+              } catch {
+                return; // don't baseline on a failed read; retry next tick
+              }
+              if (!diskDoc || JSON.stringify(diskDoc) !== JSON.stringify(loaded)) {
+                await handleRemoteChange(activeDoc.id, projectId, entry.revision, entry.sha256);
+                return;
+              }
+            }
             useWorkspaceStore.getState().setActiveDiskSync({
               projectId,
               lastSeenRevision: entry.revision,
