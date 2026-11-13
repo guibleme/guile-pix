@@ -2,6 +2,21 @@ import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
+// The disk-sync sidecar (guile-pix MCP server) lives on a different localhost
+// port than the editor, so it is a different origin for CSP purposes. Without
+// these entries the browser blocks every sidecar fetch/EventSource and the
+// editor silently works standalone. Both host spellings share the configured
+// port (NEXT_PUBLIC_GUILE_PIX_SIDECAR_URL, default http://127.0.0.1:3101).
+let sidecarOrigins = 'http://127.0.0.1:3101 http://localhost:3101';
+try {
+  const sidecarPort = new URL(
+    process.env.NEXT_PUBLIC_GUILE_PIX_SIDECAR_URL || 'http://127.0.0.1:3101',
+  ).port || '3101';
+  sidecarOrigins = `http://127.0.0.1:${sidecarPort} http://localhost:${sidecarPort}`;
+} catch {
+  // keep defaults
+}
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -13,7 +28,7 @@ const contentSecurityPolicy = [
   "media-src 'self' data: blob:",
   "style-src 'self' 'unsafe-inline'",
   `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ''}`,
-  `connect-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com${isDevelopment ? ' ws: wss:' : ''}`,
+  `connect-src 'self' ${sidecarOrigins} https://va.vercel-scripts.com https://vitals.vercel-insights.com${isDevelopment ? ' ws: wss:' : ''}`,
   "worker-src 'self' blob:",
 ].join('; ');
 

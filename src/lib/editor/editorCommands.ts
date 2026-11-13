@@ -50,7 +50,7 @@ const editorCommands: Record<EditorCommandId, EditorCommand> = {
   },
   'file.saveProject': {
     execute: () => {
-      saveCurrentProjectToDisk();
+      void saveCurrentProjectToDisk();
       usePlayerStatsStore.getState().addExp(5);
     },
   },

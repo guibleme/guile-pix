@@ -5,6 +5,7 @@ import type { Layer } from '@/types/layer';
 import type { Frame } from '@/types/frame';
 import type { HistoryEntry, HistoryLayerStateSnapshot } from '@/types/history';
 import { deserializeProject, serializeProject } from '@/lib/export/projectFile';
+import { snapshotEditorDocumentV2 } from '@/lib/project/editorSpriteDocumentAdapter';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useLayerStore } from '@/stores/useLayerStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
@@ -18,6 +19,20 @@ import type { SpriteDocumentV2 } from '@guile-pix/sprite-core';
 
 const MAX_CLOSED_DOCUMENTS = 12;
 
+/**
+ * Disk identity of a document as seen through the sync sidecar. Set once the
+ * sidecar reports a .dogsprite file with the same project id as the open
+ * document; `lastSeenRevision`/`lastSeenHash` are the disk state the editor
+ * has already accounted for. Deliberately NOT persisted in the workspace
+ * session: every session re-discovers the disk state (and picks up agent
+ * saves that landed while the editor was closed).
+ */
+export interface DiskSyncInfo {
+  projectId: string;
+  lastSeenRevision: number;
+  lastSeenHash: string;
+}
+
 interface WorkspaceDocumentData {
   project: ProjectSettings;
   layers: Layer[];
@@ -30,6 +45,7 @@ interface WorkspaceDocumentData {
   baselineSignature: string;
   isDirty: boolean;
   sourceDocumentV2?: SpriteDocumentV2;
+  diskSync?: DiskSyncInfo;
 }
 
 export interface WorkspaceDocument extends WorkspaceDocumentData {
@@ -44,6 +60,7 @@ interface CreateWorkspaceDocumentInput {
   fps: number;
   activeFrameIndex?: number;
   sourceDocumentV2?: SpriteDocumentV2;
+  diskSync?: DiskSyncInfo;
 }
 
 interface WorkspaceState {
@@ -61,6 +78,7 @@ interface WorkspaceState {
   createDocument: (input: CreateWorkspaceDocumentInput, options?: { setActive?: boolean }) => string;
   openProjectFileAsDocument: (file: unknown, options?: { setActive?: boolean }) => string;
   setActiveSourceDocumentV2: (document: SpriteDocumentV2) => void;
+  setActiveDiskSync: (diskSync: DiskSyncInfo | undefined) => void;
 }
 
 function pushClosedDocuments(
@@ -111,28 +129,52 @@ function cloneFrames(frames: Frame[]): Frame[] {
   }));
 }
 
+/**
+ * Baseline signature for a document snapshot. MUST mirror
+ * getCurrentProjectSnapshot() in projectPersistence exactly (v2 canonical
+ * snapshot, serializeProject fallback): refreshUnsavedChangesState compares
+ * the live snapshot against this baseline, and any divergence marks the
+ * document dirty forever. A previous version used serializeProject here
+ * while refresh used the v2 snapshot, so every tab-loaded v2 file showed
+ * dirty immediately — which also silently disabled clean auto-reload in
+ * disk sync (the clean path never ran because isDirty was always true).
+ */
 function getSignatureFromData(data: {
   project: ProjectSettings;
   layers: Layer[];
   activeLayerId: string;
   frames: Frame[];
+  activeFrameIndex: number;
   fps: number;
+  loop: boolean;
+  sourceDocumentV2?: SpriteDocumentV2;
 }): string {
   const normalizedFrames = cloneFrames(data.frames);
-  const file = serializeProject(
-    { ...data.project },
-    data.layers.map((layer) => ({ ...layer })),
-    data.activeLayerId,
-    normalizedFrames,
-    data.fps
-  );
-  return JSON.stringify(file);
+  const snapshot = snapshotEditorDocumentV2({
+    project: { ...data.project },
+    layers: data.layers.map((layer) => ({ ...layer })),
+    activeLayerId: data.activeLayerId,
+    frames: normalizedFrames,
+    activeFrameIndex: data.activeFrameIndex,
+    fps: data.fps,
+    loop: data.loop,
+    sourceDocument: data.sourceDocumentV2 ? structuredClone(data.sourceDocumentV2) : undefined,
+  });
+  return snapshot.ok
+    ? JSON.stringify(snapshot.value)
+    : JSON.stringify(serializeProject(
+        { ...data.project },
+        data.layers.map((layer) => ({ ...layer })),
+        data.activeLayerId,
+        normalizedFrames,
+        data.fps,
+      ));
 }
 
-function captureCurrentDocumentData(sourceDocumentV2?: SpriteDocumentV2): WorkspaceDocumentData {
+function captureCurrentDocumentData(sourceDocumentV2?: SpriteDocumentV2, diskSync?: DiskSyncInfo): WorkspaceDocumentData {
   const project = useProjectStore.getState().project;
   const { layers, activeLayerId } = useLayerStore.getState();
-  const { frames, activeFrameIndex, fps } = useTimelineStore.getState();
+  const { frames, activeFrameIndex, fps, loop } = useTimelineStore.getState();
   const { undoStack, redoStack } = useHistoryStore.getState();
   const persistence = usePersistenceStore.getState();
   const normalizedFrames = cloneFrames(frames);
@@ -141,7 +183,10 @@ function captureCurrentDocumentData(sourceDocumentV2?: SpriteDocumentV2): Worksp
     layers,
     activeLayerId,
     frames: normalizedFrames,
+    activeFrameIndex,
     fps,
+    loop,
+    sourceDocumentV2,
   });
 
   return {
@@ -156,6 +201,7 @@ function captureCurrentDocumentData(sourceDocumentV2?: SpriteDocumentV2): Worksp
     baselineSignature,
     isDirty: persistence.isDirty,
     sourceDocumentV2: sourceDocumentV2 ? structuredClone(sourceDocumentV2) : undefined,
+    diskSync: diskSync ? { ...diskSync } : undefined,
   };
 }
 
@@ -192,12 +238,19 @@ function createDocumentDataFromInput(input: CreateWorkspaceDocumentInput): Works
   const activeFrameIndex = Math.max(0, Math.min(input.activeFrameIndex ?? 0, Math.max(0, frames.length - 1)));
   const project = { ...input.project };
   const layers = input.layers.map((layer) => ({ ...layer }));
+  // Loop comes from the timeline store: applyDocumentToStores keeps the
+  // store's loop for the new document, and the live snapshot reads it from
+  // the same store — the baseline must agree with both.
+  const loop = useTimelineStore.getState().loop;
   const baselineSignature = getSignatureFromData({
     project,
     layers,
     activeLayerId: input.activeLayerId,
     frames,
+    activeFrameIndex,
     fps: input.fps,
+    loop,
+    sourceDocumentV2: input.sourceDocumentV2,
   });
 
   return {
@@ -212,6 +265,7 @@ function createDocumentDataFromInput(input: CreateWorkspaceDocumentInput): Works
     baselineSignature,
     isDirty: false,
     sourceDocumentV2: input.sourceDocumentV2 ? structuredClone(input.sourceDocumentV2) : undefined,
+    diskSync: input.diskSync ? { ...input.diskSync } : undefined,
   };
 }
 
@@ -272,8 +326,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   syncActiveDocumentFromStores: () => {
     const { activeDocumentId, documents } = get();
     if (!activeDocumentId || documents.length === 0) return;
-    const source = documents.find((doc) => doc.id === activeDocumentId)?.sourceDocumentV2;
-    const snapshot = captureCurrentDocumentData(source);
+    const current = documents.find((doc) => doc.id === activeDocumentId);
+    const snapshot = captureCurrentDocumentData(current?.sourceDocumentV2, current?.diskSync);
     set({
       documents: documents.map((doc) =>
         doc.id === activeDocumentId
@@ -290,7 +344,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     const target = state.documents.find((doc) => doc.id === id);
     if (!target) return false;
 
-    const snapshot = state.activeDocumentId ? captureCurrentDocumentData(state.documents.find((doc) => doc.id === state.activeDocumentId)?.sourceDocumentV2) : null;
+    const current = state.activeDocumentId ? state.documents.find((doc) => doc.id === state.activeDocumentId) : undefined;
+    const snapshot = current ? captureCurrentDocumentData(current.sourceDocumentV2, current.diskSync) : null;
     const nextDocuments = state.documents.map((doc) => {
       if (doc.id !== state.activeDocumentId || !snapshot) return doc;
       return { id: doc.id, ...snapshot };
@@ -320,7 +375,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       return true;
     }
 
-    const snapshot = captureCurrentDocumentData(state.documents.find((doc) => doc.id === id)?.sourceDocumentV2);
+    const closing = state.documents.find((doc) => doc.id === id);
+    const snapshot = captureCurrentDocumentData(closing?.sourceDocumentV2, closing?.diskSync);
     const currentIndex = state.documents.findIndex((doc) => doc.id === id);
     if (currentIndex === -1) return false;
 
@@ -349,7 +405,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     if (!state.initialized || state.documents.length <= 1) return false;
     if (!state.documents.some((doc) => doc.id === keepId)) return false;
 
-    const snapshot = state.activeDocumentId ? captureCurrentDocumentData(state.documents.find((doc) => doc.id === state.activeDocumentId)?.sourceDocumentV2) : null;
+    const current = state.activeDocumentId ? state.documents.find((doc) => doc.id === state.activeDocumentId) : undefined;
+    const snapshot = current ? captureCurrentDocumentData(current.sourceDocumentV2, current.diskSync) : null;
     const currentDocuments = state.documents.map((doc) => {
       if (doc.id !== state.activeDocumentId || !snapshot) return doc;
       return { id: doc.id, ...snapshot };
@@ -389,9 +446,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       baselineSignature: closed.baselineSignature,
       isDirty: closed.isDirty,
       sourceDocumentV2: closed.sourceDocumentV2 ? structuredClone(closed.sourceDocumentV2) : undefined,
+      diskSync: closed.diskSync ? { ...closed.diskSync } : undefined,
     };
 
-    const snapshot = state.activeDocumentId ? captureCurrentDocumentData(state.documents.find((doc) => doc.id === state.activeDocumentId)?.sourceDocumentV2) : null;
+    const current = state.activeDocumentId ? state.documents.find((doc) => doc.id === state.activeDocumentId) : undefined;
+    const snapshot = current ? captureCurrentDocumentData(current.sourceDocumentV2, current.diskSync) : null;
     const nextDocuments = state.documents.map((doc) => {
       if (doc.id !== state.activeDocumentId || !snapshot) return doc;
       return { id: doc.id, ...snapshot };
@@ -415,7 +474,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     const state = get();
     if (!state.initialized) return null;
 
-    const snapshot = state.activeDocumentId ? captureCurrentDocumentData(state.documents.find((doc) => doc.id === state.activeDocumentId)?.sourceDocumentV2) : null;
+    const current = state.activeDocumentId ? state.documents.find((doc) => doc.id === state.activeDocumentId) : undefined;
+    const snapshot = current ? captureCurrentDocumentData(current.sourceDocumentV2, current.diskSync) : null;
     const currentDocuments = state.documents.map((doc) => {
       if (doc.id !== state.activeDocumentId || !snapshot) return doc;
       return { id: doc.id, ...snapshot };
@@ -449,7 +509,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     const id = nanoid();
     const created: WorkspaceDocument = { id, ...data };
 
-    const snapshot = state.activeDocumentId ? captureCurrentDocumentData(state.documents.find((doc) => doc.id === state.activeDocumentId)?.sourceDocumentV2) : null;
+    const current = state.activeDocumentId ? state.documents.find((doc) => doc.id === state.activeDocumentId) : undefined;
+    const snapshot = current ? captureCurrentDocumentData(current.sourceDocumentV2, current.diskSync) : null;
     const nextDocuments = state.documents.map((doc) => {
       if (doc.id !== state.activeDocumentId || !snapshot) return doc;
       return { id: doc.id, ...snapshot };
@@ -486,5 +547,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     const state = get();
     if (!state.activeDocumentId) return;
     set({ documents: state.documents.map((entry) => entry.id === state.activeDocumentId ? { ...entry, sourceDocumentV2: structuredClone(document) } : entry) });
+  },
+
+  setActiveDiskSync: (diskSync) => {
+    const state = get();
+    if (!state.activeDocumentId) return;
+    set({ documents: state.documents.map((entry) => entry.id === state.activeDocumentId ? { ...entry, diskSync: diskSync ? { ...diskSync } : undefined } : entry) });
   },
 }));

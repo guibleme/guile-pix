@@ -139,7 +139,7 @@ function rgba(color: string): [number, number, number, number] | null {
   return [0, 2, 4, 6].map((offset) => Number.parseInt(value.slice(offset, offset + 2), 16)) as [number, number, number, number];
 }
 
-function safeName(value: string): string {
+export function safeName(value: string): string {
   const sanitized = value.replace(/[^a-zA-Z0-9._-]/g, '_');
   return sanitized || 'sprite';
 }
