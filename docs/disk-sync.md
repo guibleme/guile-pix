@@ -5,6 +5,9 @@ the disk. The MCP server speaks stdio, which a browser cannot reach, so a
 small HTTP sidecar runs in the same MCP process and serves the `.dogsprite`
 files in the output directory on localhost.
 
+The AI assist box builds on this loop (agent edits requested from the
+panel arrive via the same reload path) — see `docs/assist-box.md`.
+
 ## Running it
 
 ```bash

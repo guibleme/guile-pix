@@ -30,6 +30,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useAnimationPlayback } from '@/hooks/useAnimationPlayback';
 import { useProjectAutoSave } from '@/hooks/useProjectAutoSave';
 import { useDiskSync } from '@/hooks/useDiskSync';
+import { useAssistPolling } from '@/hooks/useAssistPolling';
 import { useWorkspaceSessionPersistence } from '@/hooks/useWorkspaceSessionPersistence';
 import { installRuntimeErrorHandlers } from '@/lib/observability/runtimeErrors';
 import { useUIStore } from '@/stores/useUIStore';
@@ -309,6 +310,7 @@ export default function EditorShell() {
   useAnimationPlayback();
   useProjectAutoSave();
   useDiskSync();
+  useAssistPolling();
   useWorkspaceSessionPersistence();
 
   useEffect(() => {

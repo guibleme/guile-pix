@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import { CanvasEngine } from '@/lib/canvas/CanvasEngine';
 import { PixelBuffer } from '@/lib/canvas/PixelBuffer';
 import { useCanvasStore } from '@/stores/useCanvasStore';
+import { useAIStore } from '@/stores/useAIStore';
 import { useLayerStore } from '@/stores/useLayerStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
 import { useProjectStore } from '@/stores/useProjectStore';
@@ -621,6 +622,10 @@ export default function CanvasViewport() {
   const selectionMarqueeAnchorRef = useRef<{ x: number; y: number } | null>(null);
   const selectionMarqueeCurrentRef = useRef<{ x: number; y: number } | null>(null);
   const selectionMarqueePointerIdRef = useRef<number | null>(null);
+  // AI assist pick mode (self-contained: never touches the select tool's refs).
+  const assistPickAnchorRef = useRef<{ x: number; y: number } | null>(null);
+  const assistPickCurrentRef = useRef<{ x: number; y: number } | null>(null);
+  const assistPickPointerIdRef = useRef<number | null>(null);
   const selectionMoveStartRef = useRef<{ x: number; y: number } | null>(null);
   const selectionMoveSourceRectRef = useRef<SelectionRect | null>(null);
   const selectionMovePixelsRef = useRef<Uint8ClampedArray | null>(null);
@@ -704,6 +709,20 @@ export default function CanvasViewport() {
     if (!anchor || !current) return null;
     const { width, height } = useProjectStore.getState().project;
     return buildSelectionRectFromPoints(anchor, current, width, height);
+  }, []);
+
+  const getAssistMarqueeRect = useCallback((): SelectionRect | null => {
+    const anchor = assistPickAnchorRef.current;
+    const current = assistPickCurrentRef.current;
+    if (!anchor || !current) return null;
+    const { width, height } = useProjectStore.getState().project;
+    return buildSelectionRectFromPoints(anchor, current, width, height);
+  }, []);
+
+  const clearAssistPickState = useCallback((): void => {
+    assistPickAnchorRef.current = null;
+    assistPickCurrentRef.current = null;
+    assistPickPointerIdRef.current = null;
   }, []);
 
   const getVisibleSelectionRect = useCallback((): SelectionRect | null => {
@@ -814,6 +833,10 @@ export default function CanvasViewport() {
     if (marqueeRect) {
       drawSelectionRectOverlay(ctx, engine, canvas, width, height, marqueeRect, 'draft');
     }
+    const assistMarqueeRect = getAssistMarqueeRect();
+    if (assistMarqueeRect) {
+      drawSelectionRectOverlay(ctx, engine, canvas, width, height, assistMarqueeRect, 'draft');
+    }
     if (!isFreehandTool(activeTool)) return;
 
     const { zoom } = useCanvasStore.getState();
@@ -906,7 +929,7 @@ export default function CanvasViewport() {
         ctx.stroke();
       }
     }
-  }, [drawSelectionRectOverlay, getMarqueeSelectionRect, getVisibleSelectionRect]);
+  }, [drawSelectionRectOverlay, getAssistMarqueeRect, getMarqueeSelectionRect, getVisibleSelectionRect]);
 
   const render = useCallback(() => {
     const engine = engineRef.current;
@@ -1484,6 +1507,16 @@ export default function CanvasViewport() {
         return;
       }
 
+      // Esc cancels an armed AI assist pick before anything else.
+      if (e.key.toLowerCase() === 'escape' && useAIStore.getState().pickMode) {
+        e.preventDefault();
+        clearAssistPickState();
+        useAIStore.getState().cancelPick();
+        setCanvasCursor('crosshair');
+        render();
+        return;
+      }
+
       const selectionRect = selectionRectRef.current;
       const hasActiveSelection = Boolean(selectionRect && isSelectionInActiveContext());
       const ctrl = e.ctrlKey || e.metaKey;
@@ -1551,6 +1584,7 @@ export default function CanvasViewport() {
     window.addEventListener('keydown', handleSelectionShortcuts);
     return () => window.removeEventListener('keydown', handleSelectionShortcuts);
   }, [
+    clearAssistPickState,
     clearSelectionState,
     copyFromActiveLayer,
     deleteSelection,
@@ -1632,6 +1666,29 @@ export default function CanvasViewport() {
       lastStrokePixelRef.current = pixel;
       strokeAnchorPixelRef.current = pixel;
       wasShiftConstrainedRef.current = false;
+
+      // AI assist pick mode wins over every tool: pin = one click, rect = drag.
+      const pickMode = useAIStore.getState().pickMode;
+      if (pickMode) {
+        const { width, height } = useProjectStore.getState().project;
+        const resolvedPixel = {
+          x: clampPixelCoordinate(pixel.x, width),
+          y: clampPixelCoordinate(pixel.y, height),
+        };
+        if (pickMode === 'pin') {
+          useAIStore.getState().setPickedTarget({ kind: 'pin', point: resolvedPixel });
+          setCanvasCursor('crosshair');
+          render();
+          return;
+        }
+        assistPickAnchorRef.current = resolvedPixel;
+        assistPickCurrentRef.current = resolvedPixel;
+        assistPickPointerIdRef.current = e.pointerId;
+        setCanvasCursor('crosshair');
+        e.currentTarget.setPointerCapture(e.pointerId);
+        render();
+        return;
+      }
 
       const activeTool = useToolStore.getState().activeTool;
       activeToolRef.current = activeTool;
@@ -1839,6 +1896,17 @@ export default function CanvasViewport() {
         return;
       }
 
+      if (assistPickPointerIdRef.current === e.pointerId && assistPickAnchorRef.current) {
+        const { width, height } = useProjectStore.getState().project;
+        assistPickCurrentRef.current = {
+          x: clampPixelCoordinate(rawPixel.x, width),
+          y: clampPixelCoordinate(rawPixel.y, height),
+        };
+        setCanvasCursor('crosshair');
+        render();
+        return;
+      }
+
       if (selectionMarqueePointerIdRef.current === e.pointerId && selectionMarqueeAnchorRef.current) {
         const { width, height } = useProjectStore.getState().project;
         selectionMarqueeCurrentRef.current = {
@@ -2011,6 +2079,32 @@ export default function CanvasViewport() {
         return;
       }
 
+      if (assistPickPointerIdRef.current === e.pointerId && assistPickAnchorRef.current) {
+        const engine = engineRef.current;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const pixel = engine
+          ? engine.screenToPixel(e.clientX - rect.left, e.clientY - rect.top)
+          : assistPickAnchorRef.current;
+        const { width, height } = useProjectStore.getState().project;
+        assistPickCurrentRef.current = {
+          x: clampPixelCoordinate(pixel.x, width),
+          y: clampPixelCoordinate(pixel.y, height),
+        };
+        const pickedRect = getAssistMarqueeRect();
+        if (pickedRect) {
+          useAIStore.getState().setPickedTarget({ kind: 'rect', rect: pickedRect });
+        } else {
+          useAIStore.getState().cancelPick();
+        }
+        clearAssistPickState();
+        setCanvasCursor('crosshair');
+        render();
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        }
+        return;
+      }
+
       if (selectionMarqueePointerIdRef.current === e.pointerId && selectionMarqueeAnchorRef.current) {
         const engine = engineRef.current;
         const rect = e.currentTarget.getBoundingClientRect();
@@ -2096,7 +2190,7 @@ export default function CanvasViewport() {
         e.currentTarget.releasePointerCapture(e.pointerId);
       }
     },
-    [clearSymmetryDragState, finalizeDrawingStroke, getMarqueeSelectionRect, makeToolContext, render, setCanvasCursor]
+    [clearAssistPickState, clearSymmetryDragState, finalizeDrawingStroke, getAssistMarqueeRect, getMarqueeSelectionRect, makeToolContext, render, setCanvasCursor]
   );
 
   const onPointerCancel = useCallback(
