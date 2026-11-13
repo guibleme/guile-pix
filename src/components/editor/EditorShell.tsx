@@ -24,10 +24,12 @@ import FloatingPreview from './FloatingPreview';
 import DungeonPanel from '@/components/dungeon/DungeonPanel';
 import QuickActionsBar from './QuickActionsBar';
 import DocumentTabs from './DocumentTabs';
+import DiskSyncBanner from './DiskSyncBanner';
 import ResizeHandle from '@/components/ui/ResizeHandle';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useAnimationPlayback } from '@/hooks/useAnimationPlayback';
 import { useProjectAutoSave } from '@/hooks/useProjectAutoSave';
+import { useDiskSync } from '@/hooks/useDiskSync';
 import { useWorkspaceSessionPersistence } from '@/hooks/useWorkspaceSessionPersistence';
 import { installRuntimeErrorHandlers } from '@/lib/observability/runtimeErrors';
 import { useUIStore } from '@/stores/useUIStore';
@@ -306,6 +308,7 @@ export default function EditorShell() {
   useKeyboardShortcuts();
   useAnimationPlayback();
   useProjectAutoSave();
+  useDiskSync();
   useWorkspaceSessionPersistence();
 
   useEffect(() => {
@@ -336,6 +339,7 @@ export default function EditorShell() {
       <MenuBar />
       <QuickActionsBar />
       <DocumentTabs />
+      <DiskSyncBanner />
 
       <EditorLayout />
 

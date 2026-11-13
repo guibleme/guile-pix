@@ -10,7 +10,8 @@ export type RecoveryReason =
   | 'manual-save'
   | 'manual-load'
   | 'new-project'
-  | 'session-open';
+  | 'session-open'
+  | 'disk-sync';
 
 export interface RecoverySnapshotMeta {
   id: string;
