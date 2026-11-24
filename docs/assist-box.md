@@ -133,6 +133,20 @@ picks it up at connect time. Rules: only work requests you claimed; never
 edit the request files directly; if the edit cannot be done, fail the
 request with a reason instead of leaving it claimed.
 
+## Vision: the agent picks the target
+
+The request's mask is a starting hint, not the answer. For frame targets
+or prompts naming a feature ("the eyes", "the plume"), the agent should
+call `get_preview` first: it renders the active frame (all visible layers
+composited, nearest-neighbor upscale, default 8x) and returns the PNG as
+an **inline image** plus a saved file path, so the agent can SEE the
+sprite, locate the feature visually, and define its own mask with
+`define_mask`. If the feature cannot be found, fail the request with a
+reason instead of guessing pixels. `get_preview` is read-only (no revision
+bump) and needs the project loaded first. Note: an earlier file-path-only
+preview handler existed but was never registered as a tool; the current
+tool returns the image inline, which works for any MCP client.
+
 ## Editor pieces
 
 - `src/types/ai.ts` — `AssistTarget`, `AssistRequest`, `AssistStatus`

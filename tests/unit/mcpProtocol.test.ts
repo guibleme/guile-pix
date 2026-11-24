@@ -36,7 +36,7 @@ describe('MCP animation protocol', () => {
       expect(instructions).toContain('generate_walk_right');
       expect(instructions).toContain('pending human review');
       for (const removedTool of [
-        'draw_smooth_shape', 'get_preview', 'validate_sprite_quality',
+        'draw_smooth_shape', 'validate_sprite_quality',
         'get_drawing_guide', 'list_templates', 'draw_template',
       ]) {
         expect(instructions).not.toContain(removedTool);
@@ -46,7 +46,7 @@ describe('MCP animation protocol', () => {
       const expectedNames = [
         'apply_mask', 'cancel_assist_request', 'claim_assist_request', 'clear_layer', 'complete_assist_request', 'create_clip', 'create_frame', 'create_layer', 'create_sprite', 'define_mask', 'delete_clip', 'delete_frame', 'delete_layer',
         'draw_primitives', 'duplicate_frame', 'duplicate_frame_range', 'export_animation_bundle', 'export_animation_preview', 'fail_assist_request', 'generate_walk_right', 'get_animation_review',
-        'get_mask', 'get_palette', 'get_project_snapshot', 'link_cels', 'list_assist_requests', 'load_project', 'map_to_palette', 'redo', 'rename_clip', 'reorder_frames', 'reorder_layers', 'replace_color',
+        'get_mask', 'get_palette', 'get_preview', 'get_project_snapshot', 'link_cels', 'list_assist_requests', 'load_project', 'map_to_palette', 'redo', 'rename_clip', 'reorder_frames', 'reorder_layers', 'replace_color',
         'save_project', 'select_frame', 'set_active_layer', 'set_clip_metadata', 'set_frame_duration', 'set_pixels', 'set_project_metadata', 'set_project_palette',
         'transform_region', 'undo', 'unlink_cel', 'update_layer', 'validate_animation',
       ];
@@ -104,6 +104,20 @@ describe('MCP animation protocol', () => {
         expect(image.mimeType).toBe('image/png');
         expect(Buffer.from(image.data, 'base64').subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
       }
+
+      const preview = await client.callTool({
+        name: 'get_preview',
+        arguments: { projectId, scale: 4 },
+      }) as CallToolResult;
+      const previewData = preview.structuredContent as Record<string, unknown>;
+      expect(previewData).toEqual(expect.objectContaining({ ok: true, operation: 'get_preview', projectId, width: 16, height: 16, scale: 4, outputWidth: 64, outputHeight: 64 }));
+      const previewImage = preview.content.find((item) => item.type === 'image');
+      expect(previewImage?.type).toBe('image');
+      if (previewImage?.type === 'image') {
+        expect(previewImage.mimeType).toBe('image/png');
+        expect(Buffer.from(previewImage.data, 'base64').subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+      }
+      expect(fs.existsSync(previewData.outputPath as string)).toBe(true);
 
       const loadedWalk = await client.callTool({
         name: 'load_project',

@@ -25,6 +25,8 @@ import {
 import { getOutputDir } from './outputDir.js';
 import { getPalette } from './palettes/builtIn.js';
 import { analyzeFrameChanges, assertContactSheetSize, getContactSheetDimensions, renderContactSheet } from './review.js';
+import { renderToPng } from './render.js';
+import { PixelBuffer } from './lib/pixelBuffer.js';
 import { encodeAnimationAtlas } from './animationBundle.js';
 import { PNG } from 'pngjs';
 import * as gifencModule from 'gifenc';
@@ -1229,6 +1231,43 @@ export class AnimationBridge {
         frameCount: session.document.frames.length,
         afterHashes: await documentHashes(session.document),
       });
+    });
+  }
+
+  /**
+   * Render one composited frame to a PNG the agent can SEE (inline image),
+   * so it can locate features visually and choose its own pixels instead of
+   * only following a human-placed pin. Also saves preview-<project>.png in
+   * the output dir. Read-only: does not increment revision.
+   */
+  async getPreview(args: { projectId: string; frameId?: string; scale?: number }): Promise<CallToolResult> {
+    return this.serial(args.projectId, async () => {
+      const session = this.sessions.get(args.projectId);
+      if (!session) return this.failure(args.projectId, 'INVALID_TARGET', `Project "${args.projectId}" was not found`, 'Load or create the project first.');
+      const document = session.document;
+      const frameId = args.frameId ?? document.activeFrameId;
+      const frame = document.frames.find((candidate) => candidate.id === frameId);
+      if (!frame) return this.failure(args.projectId, 'INVALID_TARGET', `Frame "${frameId}" was not found`, 'Pick a frame id from get_project_snapshot.');
+      const scale = Math.max(1, Math.min(32, Math.round(args.scale ?? 8)));
+      const pixels = compositeFrame(document, frameId);
+      const buffer = new PixelBuffer(document.project.width, document.project.height, pixels);
+      const png = renderToPng(buffer, scale);
+      const outputPath = path.join(this.outputDir, `preview-${safeName(args.projectId)}.png`);
+      fs.writeFileSync(outputPath, png);
+      return response({
+        ok: true,
+        operation: 'get_preview',
+        projectId: args.projectId,
+        revision: document.revision,
+        frameId,
+        width: document.project.width,
+        height: document.project.height,
+        scale,
+        outputWidth: document.project.width * scale,
+        outputHeight: document.project.height * scale,
+        outputPath,
+        mimeType: 'image/png',
+      }, { image: png, mimeType: 'image/png' });
     });
   }
 
