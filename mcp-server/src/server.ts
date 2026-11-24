@@ -231,6 +231,11 @@ export function createMcpServerWithBridge(options: McpServerOptions = {}): { ser
     inputSchema: z.object({ projectId, expectedRevision, format: z.enum(['apng', 'gif', 'webp']).default('apng').describe('APNG preserves arbitrary millisecond delays; GIF requires centisecond-representable delays; WebP returns unsupported guidance'), scale: z.number().int().min(1).max(32).optional(), background: z.enum(['transparent', 'checkerboard', 'solid']).optional(), backgroundColor: hexColor.optional(), repeat: z.number().int().min(0).optional(), outputPath: z.string().min(1).optional(), overwrite: z.boolean().default(false).describe('Must be true to replace an existing file') }), outputSchema: resultSchema,
   }, (args) => bridge.exportAnimationPreview(args));
 
+  server.registerTool('get_preview', {
+    description: 'Render one composited frame (all visible layers) to a PNG image so you can SEE the sprite before choosing pixels. Returns the image inline plus a saved file path. Load the project first. Use it to locate a named feature visually (eyes, plume, crest), then target it with define_mask/set_pixels/transform_region.',
+    inputSchema: z.object({ projectId, frameId: frameId.optional(), scale: z.number().int().min(1).max(32).optional().describe('Nearest-neighbor upscale factor, default 8') }), outputSchema: resultSchema,
+  }, (args) => bridge.getPreview(args));
+
   server.registerTool('get_project_snapshot', {
     description: 'Read bounded project metadata and optional row-major RGBA8 RLE pixels without mutation.',
     inputSchema: z.object({ projectId, frameIds: z.array(frameId).optional(), layers: z.array(z.string().min(1)).optional(), region: z.object({ x: z.number().int().nonnegative(), y: z.number().int().nonnegative(), width: z.number().int().positive(), height: z.number().int().positive() }).optional(), includePixels: z.boolean().optional() }), outputSchema: resultSchema,
